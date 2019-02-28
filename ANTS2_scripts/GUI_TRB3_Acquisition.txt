@@ -1,0 +1,45 @@
+
+
+gui.textNew("text_field", "")
+
+/************************   GUI    ************************/
+gui.resize( 600,  300 )
+gui.horizontalLayout("h1", "")
+       gui.labelNew("label_hlds_files_dir", "h1", "Set .hlds files directory: ")
+       //gui.editNew("edit_hlds_files_dir", "h1", "/data/GAGGCam/hlds/2018-07-14/Test")
+       gui.editNew("edit_hlds_files_dir", "h1", "/mnt/B16_Archive/hlds/2019-01-03/Test")
+
+       //gui.addStretch("h1")
+       gui.labelNew("label_hld_file_size", "h1", ".hld file size in Mega: ")
+       gui.editNew("edit_hld_file_size", "h1", "100") // For tests I'm I'using .hld files with just 5 MB
+  
+gui.horizontalLayout("h2", "")
+//       gui.addStretch("h2")
+       gui.buttonNew("prepareTRBReader", "h2", "Prepare TRBReader")
+       gui.buttonNew("stopTRBReader_DAQ", "h2", "Stop TRBReader DAQ")
+       gui.addStretch("h2")
+
+gui.horizontalLayout("h3", "")
+ gui.buttonNew("STARTSimpleAcquisition", "h3", "START acquisition (time selected):") 
+gui.setEnabled("STARTSimpleAcquisition",  false )
+
+//gui.editNew("edit_num_hld_files", "h3", "5") 
+//gui.labelNew("label_hld_files", "h3", ".hld files")
+gui.labelNew("label_acquisition_time_seconds", "h3", "Acquisition time (seconds): ")
+gui.setEnabled("label_acquisition_time_seconds",  false )
+gui.editNew("edit_acquisition_time_seconds", "h3", "9") 
+gui.setEnabled("edit_acquisition_time_seconds",  false )
+gui.buttonNew("stopRunningAcquisition", "h3", "STOP running acquisition (no real-time processing)")
+gui.setEnabled("stopRunningAcquisition",  false )
+ // gui.addStretch("h3")
+
+gui.horizontalLayout("h4", "")
+       gui.buttonNew("start_acquisition_indefinitely", "h4", "START Acquisition until stopped")
+       gui.setEnabled( "start_acquisition_indefinitely",  false )
+
+
+gui.buttonOnClick("prepareTRBReader", prepare_TRBReader)
+
+
+gui.setWidgetTitle("TRB3 Aquisition ANTS2 GUI")
+gui.show()

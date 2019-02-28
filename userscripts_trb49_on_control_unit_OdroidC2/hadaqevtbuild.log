@@ -1,0 +1,42 @@
+21:09:11   0.072054 base/src/DataIO.cxx:ShowInfo:73 10.0.0.60//home/odroid/Data/dabc18028210911.hld cannot open file for writing
+21:09:11   0.072240 base/src/Factory.cxx:CreateTransport:88 Output object hld://10.0.0.60//home/odroid/Data/dabc.hld?maxsize=10 cannot be initialized
+21:09:11   0.073584 base/src/Application.cxx:CallInitFunc:318 Cannot create output transport for port Combiner/Output1
+21:09:37   0.034153 base/src/DataIO.cxx:ShowInfo:73 10.0.0.60/home/odroid/Data/dabc18028210937.hld cannot open file for writing
+21:09:37   0.034444 base/src/Factory.cxx:CreateTransport:88 Output object hld://10.0.0.60/home/odroid/Data/dabc.hld?maxsize=10 cannot be initialized
+21:09:37   0.035072 base/src/Application.cxx:CallInitFunc:318 Cannot create output transport for port Combiner/Output1
+21:10:14   0.050258 base/src/DataIO.cxx:ShowInfo:73 10.0.0.60/home/jsm/Data/dabc18028211014.hld cannot open file for writing
+21:10:14   0.050666 base/src/Factory.cxx:CreateTransport:88 Output object hld://10.0.0.60/home/jsm/Data/dabc.hld?maxsize=10 cannot be initialized
+21:10:14   0.051230 base/src/Application.cxx:CallInitFunc:318 Cannot create output transport for port Combiner/Output1
+21:14:59   0.040216 base/src/DataIO.cxx:ShowInfo:73 home/jsm/Data/dabc18028211459.hld cannot open file for writing
+21:14:59   0.041010 base/src/Factory.cxx:CreateTransport:88 Output object hld://home/jsm/Data/dabc.hld?maxsize=10 cannot be initialized
+21:14:59   0.041653 base/src/Application.cxx:CallInitFunc:318 Cannot create output transport for port Combiner/Output1
+21:15:21   0.052047 base/src/DataIO.cxx:ShowInfo:73 home/jsm/Data/dabc18028211521.hld cannot open file for writing
+21:15:21   0.052208 base/src/Factory.cxx:CreateTransport:88 Output object hld://home/jsm/Data/dabc.hld?maxsize=10 cannot be initialized
+21:15:21   0.052663 base/src/Application.cxx:CallInitFunc:318 Cannot create output transport for port Combiner/Output1
+21:16:05   0.051545 base/src/DataIO.cxx:ShowInfo:73 home/jsm/Data/dabc18028211605.hld cannot open file for writing
+21:16:05   0.051691 base/src/Factory.cxx:CreateTransport:88 Output object hld://home/jsm/Data/dabc.hld?maxsize=10 cannot be initialized
+21:16:05   0.052182 base/src/Application.cxx:CallInitFunc:318 Cannot create output transport for port Combiner/Output1
+21:16:52   0.045333 base/src/DataIO.cxx:ShowInfo:73 home/jsm/Data/dabc18028211652.hld cannot open file for writing
+21:16:52   0.045697 base/src/Factory.cxx:CreateTransport:88 Output object hld://home/jsm/Data/dabc.hld?maxsize=10 cannot be initialized
+21:16:52   0.046254 base/src/Application.cxx:CallInitFunc:318 Cannot create output transport for port Combiner/Output1
+21:34:53 1081.132761 base/src/DataIO.cxx:ShowInfo:73 home/jsm/Data/dabc18028213453.hld cannot open file for writing
+21:34:53 1081.133562 base/src/Factory.cxx:CreateTransport:88 Output object hld://home/jsm/Data/dabc.hld?maxsize=10 cannot be initialized
+21:34:53 1081.134593 base/src/Application.cxx:CallInitFunc:318 Cannot create output transport for port Combiner/Output1
+21:35:20 1107.717301 base/src/DataIO.cxx:ShowInfo:73 home/jsm/Data/dabc18028213520.hld cannot open file for writing
+21:35:20 1107.717559 base/src/Factory.cxx:CreateTransport:88 Output object hld://home/jsm/Data/dabc.hld?maxsize=10 cannot be initialized
+21:35:20 1107.720011 base/src/Application.cxx:CallInitFunc:318 Cannot create output transport for port Combiner/Output1
+21:35:53 1140.522740 base/src/DataIO.cxx:ShowInfo:73 home/jsm/Data/dabc18028213553.hld cannot open file for writing
+21:35:53 1140.522952 base/src/Factory.cxx:CreateTransport:88 Output object hld://home/jsm/Data/dabc.hld?maxsize=10 cannot be initialized
+21:35:53 1140.523282 base/src/Application.cxx:CallInitFunc:318 Cannot create output transport for port Combiner/Output1
+21:35:58 1145.448061 base/src/DataIO.cxx:ShowInfo:73 home/jsm/Data/dabc18028213558.hld cannot open file for writing
+21:35:58 1145.448200 base/src/Factory.cxx:CreateTransport:88 Output object hld://home/jsm/Data/dabc.hld?maxsize=10 cannot be initialized
+21:35:58 1145.448520 base/src/Application.cxx:CallInitFunc:318 Cannot create output transport for port Combiner/Output1
+21:37:36 1244.158824 base/src/Publisher.cxx:RedirectCommand:470 Wrong address specified as producer 
+21:37:40 1247.849284 base/src/Publisher.cxx:RedirectCommand:470 Wrong address specified as producer 
+21:38:51 1318.953247 base/src/DataIO.cxx:ShowInfo:73 home/jsm/Data/dabc18028213851.hld cannot open file for writing
+21:38:51 1318.954728 base/src/Factory.cxx:CreateTransport:88 Output object hld://home/jsm/Data/dabc.hld?maxsize=10 cannot be initialized
+21:38:51 1318.955155 base/src/Application.cxx:CallInitFunc:318 Cannot create output transport for port Combiner/Output1
+21:54:40 582.564945 base/src/Publisher.cxx:RedirectCommand:470 Wrong address specified as producer 
+21:54:40 582.580889 base/src/Publisher.cxx:RedirectCommand:470 Wrong address specified as producer 
+21:54:40 582.593165 base/src/Publisher.cxx:RedirectCommand:470 Wrong address specified as producer 
+21:54:40 582.594576 base/src/Publisher.cxx:RedirectCommand:470 Wrong address specified as producer 

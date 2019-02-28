@@ -1,0 +1,364 @@
+Writen by joao.marcos@coimbra.lip.pt | Jan 2019
+
+Following the TRB3 Manuel - Quickstart userguide & experiences of B16 Gamma Cameras group and Alberto Branco and Joao Saraiva (RPC group)
+--------------------------------------------------
+
+1. How to prepare a Debian distribution (and others)
+
+sudo apt install build-essential rcs autoconf
+tcl-dev libjson-xs-perl libjson-perl
+libipc-sharelite-perl liblog-log4perl-perl
+liblog-dispatch-perl libtext-tabulardisplay-perl
+libdata-treedumper-perl libfile-chdir-perl
+libhash-fieldhash-perl gnuplot-nox rpcbind
+libconfig-auto-perl automake gcc git wireshark
+htop iptraf nmap iftop
+
+2.
+daq@delta:/opt/root/bin$ sudo chmod +x thisroot.sh
+daq@delta:/opt/root/bin$ ./thisroot.sh 
+
+    Output! ./thisroot.sh: line 33: ${(%):-%N}: bad substitution
+
+cd /DAQ_Software/trbsoft
+daq@delta:~/DAQ_Software/trbsoft$  
+
+git clone git://jspc29.x-matter.uni-frankfurt.de/projects/daqdocu.git
+git clone git://jspc29.x-matter.uni-frankfurt.de/projects/daqtools.git
+git clone git://jspc29.x-matter.uni-frankfurt.de/projects/trbnettools.git
+git clone git://jspc29.x-matter.uni-frankfurt.de/projects/daqdata.git
+
+cd trbnettools/
+
+sudo make distclean
+sudo make TRB3=1
+sudo make TRB3=1 install
+
+-------------------------------------
+ERRO in "sudo make TRB3=1":
+
+CREATING shared library libtrbnet.so
+gcc -shared -lm -ltirpc -O trbnetrpc.o trbrpc_clnt.o trbrpc_xdr.o trberror.o -o libtrbnet.so
+/usr/bin/ld: cannot find -ltirpc
+collect2: error: ld returned 1 exit status
+Makefile:69: recipe for target 'libtrbnet.so' failed
+make[1]: *** [libtrbnet.so] Error 1
+make[1]: Leaving directory '/home/daq/DAQ_Software/trbsoft/trbnettools/trbnetd'
+Makefile:96: recipe for target 'trbnetd' failed
+make: *** [trbnetd] Error 2
+
+SOLVED:
+---------------
+There was need to comment "-ltirpc" in the Makefiles LOADLIBES and LDFLAGS:
+/home/trb/trbsoft/trbnettools/trbnetd
+and
+/home/trb/trbsoft/trbnettools/trbnetd/server
+--------------------------------------
+
+CONTINUE:
+echo 'export PATH=$PATH:$HOME/DAQ_Software/trbsoft/trbnettools/bin' >> /home/daq/.bashrc
+
+change fist the make_script.pl with the below line:
+CPPFLAGS="-I/usr/include/tcl8.6 -I$path/include" LDFLAGS="-L$path/lib64" ./configure --prefix="$path" --libdir="$path/lib64"
+
+[Note: if the machine is of ARM architecture, 64 bits (e.g. Odroid-C2, RaspBerryPi...) add the following option to CPPFLAGS: --build="aarch64-unknown-linux-gnu"]
+
+And then:
+sudo ./make_script.pl
+echo 'export PATH=$PATH:$HOME/DAQ_Software/trbsoft/daqdata/bin' >> /home/daq/.bashrc
+
+-----
+More:
+-----
+
+1. The following Perl script will create a subdirectry "cache" and download several files with extension ".entity" (e.g. ADC.entity)
+
+daq@delta:~/DAQ_Software/trbsoft/daqtools/xml-db$ sudo ./xml-db.pl
+
+2. In the file CtsConfig.pm write the name of the central FPGA (EndPoint). It is "0x8000" for TRB049 board of B16 (Gamma Cameras group)
+
+/home/daq/DAQ_Software/trbsoft/daqtools/web/CtsConfig.pm:
+------ CtsConfig.pm file: -------------------------
+package CtsConfig;
+
+#default cts endpoint. can be overriden by a command line parameter
+sub getDefaultEndpoint {
+   return 0x8000;
+}
+
+1;
+----- END of CtsConfig.pm file ---------------------
+
+
+-----------------------------
+Configure the DHPC server:
+-----------------------------
+
+1.  Knowing the IP address of TRB3 board, configured in the DHCP server (see how to do it below), which can be for instance 10.0.0.49, 
+Add the line "10.0.0.49 trb049" (without "") to the file: /etc/hosts
+
+2. Then, in the file /home/username/.bashrc add the following 4 exports (they cannot have white spaces before and after the "=" signal):
+
+export TRB3_SERVER="trb049"
+export DAQOPSERVER="localhost:1"
+export TRBID="trb049"
+export TRBNETID="1"
+
+
+---------------------------------------------
+AFTER TRB3 SOFTWARE INSTALLED, to setup the communication between the machine where TRB3 software is running and TRB3 board:
+---------------------------------------------
+
+1) DHCP Configuration in the file: /etc/dhcp/dhcpd.conf:
+
+## Add the following
+  subnet 10.0.0.0 netmask 255.255.255.0 {
+        # Optionally here you can set default gateway for routing.
+        # option routers 10.0.0.0;
+
+        range 10.0.0.60 10.0.0.253;
+        option subnet-mask 255.255.255.0;
+
+        host trb49 {
+                hardware ethernet 02:00:F8:00:BE:18;
+                #fixed-address trb049;
+                fixed-address 10.0.0.49;
+        }
+     }
+
+## End of lines to be added to dhcpd.conf
+
+2) In the file /etc/network/interfaces:
+
+#JM added the following to define a static IP (10.0.0.1) for the ethernet board that will communicate with TRB3. E.g. Ethernet port name: "enp2s0"
+
+auto enp2s0
+iface enp2s0 inet static
+   address 10.0.0.1
+   netmask 255.255.255.0
+
+#JM: Comment the 4 lines above (auto 'name of the ethernet card in the system to which one wants to set a fixed IP address')
+
+
+3) Install isc-dhcp-server: apt install isc-dhcp-server
+
+ 3.2 Start or restart the DHCP server:
+     $service isc-dhcp-server restart
+
+ [if step 3.2 s not enough to start atributing IP address to trb49, follow the steps 4), below]
+
+
+------------------------------------------------------------------------------------------------------------------
+4) NOTES on the communication between machines throught the Ethernet protocal (DHCP server, set fixed IPs, etc)
+------------------------------------------------------------------------------------------------------------------	 
+	4.A) Steps to setup a communication between the controller machine and TRB3 (which may have the IP 10.0.0.49 - can be other)
+
+		4.A.1) Set a fixed IP in the controller machine (with address '10.0.0.1'):
+	     		In /etc/network/interfaces file, add the following 4 lines
+			
+
+				auto eth0 					# 'eth0' is an example of of the name of the Ethernet card to which one wants a fixed IP address. Find the name using the command $ifconfig -a
+					iface eth0 inet static 
+					address 10.0.0.1
+					netmask 255.255.255.0
+
+       			If later one wants that the machine obtain the IP by the DHCP of the institution (normal way), just comment/delete these 4 lines.
+
+		4.A.2) Stop the 'network-manager' application (very good app to deal with wireless networks) and disable it (so, in the next reboot, keep do not start automatically)
+			   $systemctl stop network-manager
+			   $systemctl disable network-manager
+
+		4.A.3) Start the 'networking' application (not able of deal with wireless networks) and enable it (so, in the next reboot, it will be started automatically)
+			   $systemctl start networking
+			   $systemctl enable networking
+
+		4.A.4) (most probably this step is also required) See what is the process ID (PID) of the application 'dhclient' (e.g.5556) and kill it: 
+			   - To find the PID: 		$ps aux |grep dhclient
+			   - To kill the process:   $kill -9 PID
+
+		4.A.5) Start or restart the DHCP server:
+			   $systemctl restart isc-dhcp-server
+
+	4.B) Steps to set (or turn back) to the usual IP attribution (through the DHCP server of the institution (e.g. Univ de Coimbra;  LIP Laboratory)
+		4.B.1) Set in /etc/network/interface file that the IP should be dynamically attributed by "some" DHCP server.
+				Comment or remove the lines that attributes a static IP to some ethernet card name (see 4.A.1)
+
+		4.B.2) Stop the 'networking' application (in some Linux distributions it can have a different name) and disable it (so, in the next reboot, keep do not start automatically)
+			   $systemctl stop networking
+   		    	   $systemctl disable networking
+
+		4.B.3) Start the 'network-manager' application (that will dynamically attribute IP address) ans enable it (so, in the next reboot, it will be started automatically)
+			   $systemctl start network-manager
+			   $systemctl enable network-manager
+
+		4.B.4) Stop DHCP server:
+			   $systemctl stop isc-dhcp-server
+
+	Note: use '$systemctl status network-manager', '$systemctl status networking' and '$systemctl status isc-dhcp-server' to see the status of that applications (if they are running or not).
+
+
+
+---------------------------------
+PREPARE ACQUISITION WITH DABC Lib
+-----------------------------------
+
+In the directry with Perl database files
+/home/odroid/trbsoft/userscripts/trb49/db
+
+set the proper IP_address and ports:
+
+------------------------------------------------------
+------------------------------------------------------
+	1. register_configgbe_ip.db
+------------------------------------------------------
+------------------------------------------------------
+
+###########################################################################################
+#Eventbuilders:
+# EB 0:   kp1pc105  eth1  00:1B:21:43:97:EA 192.168.0.2 ports 50000 - 50099
+
+!Register table
+#  Type  #   C0   #   C1   #   C2   #   C3   #   C4   #   C5   #   C6   #   C7   #   C8   #
+###########################################################################################
+#new memory locations
+      0     0x8100   0x8101   0x8102   0x8103   0x8104   0x8105   0x8106   0x8107   0x8108
+      1     0x8110   0x8111   0x8112   0x8113   0x8114   0x8115   0x8116   0x8117   0x8118
+      2     0x8120   0x8121   0x8122   0x8123   0x8124   0x8125   0x8126   0x8127   0x8128
+      3     0x8130   0x8131   0x8132   0x8133   0x8134   0x8135   0x8136   0x8137   0x8138
+      4     0x8140   0x8141   0x8142   0x8143   0x8144   0x8145   0x8146   0x8147   0x8148
+      5     0x8150   0x8151   0x8152   0x8153   0x8154   0x8155   0x8156   0x8157   0x8158
+      6     0x8160   0x8161   0x8162   0x8163   0x8164   0x8165   0x8166   0x8167   0x8168
+      7     0x8170   0x8171   0x8172   0x8173   0x8174   0x8175   0x8176   0x8177   0x8178
+      8     0x8180   0x8181   0x8182   0x8183   0x8184   0x8185   0x8186   0x8187   0x8188
+      9     0x8190   0x8191   0x8192   0x8193   0x8194   0x8195   0x8196   0x8197   0x8198
+    10     0x81A0   0x81A1   0x81A2   0x81A3   0x81A4   0x81A5   0x81A6   0x81A7   0x81A8
+    11     0x81B0   0x81B1   0x81B2   0x81B3   0x81B4   0x81B5   0x81B6   0x81B7   0x81B8
+    12     0x81C0   0x81C1   0x81C2   0x81C3   0x81C4   0x81C5   0x81C6   0x81C7   0x81C8
+    13     0x81D0   0x81D1   0x81D2   0x81D3   0x81D4   0x81D5   0x81D6   0x81D7   0x81D8
+    14     0x81E0   0x81E1   0x81E2   0x81E3   0x81E4   0x81E5   0x81E6   0x81E7   0x81E8
+    15     0x81F0   0x81F1   0x81F2   0x81F3   0x81F4   0x81F5   0x81F6   0x81F7   0x81F8
+
+
+## Alberto/João Saraiva:
+#TRB12:  DA7A 32E2D98D 10.0.1.135 ->87
+#ODROID: 001E 0634FAB2 10.0.1.67  ->43
+
+## Gamma cameras group - B16
+#TRB49 (B16): 02:00:f8:00:be:18 10.0.0.49 -> 49 in Hexadecimal = 31
+#ODROID B16: 00:1e:06:36:49:d0 10.0.0.1 -> 1 in Hexadecimal = 1
+#JM Laptop: f0:79:59:2f:4e:ee 10.0.0.61 -> 61 in Hexadecimal = 3D
+#B16 Linux PC: 14:cc:20:00:6c:61 10.0.0.65 -> 65 in exadecimal = 41
+
+!Value table
+#                    Dest MAC    Dest MAC       Dest IP     Dest Port    Src MAC     Src MAC       Src IP        Src Port   Packet Size
+# Hub    #  Type  #     C0            #     C1         #     C2           #     C3        #     C4         #     C5       #     C6     #      C7     #     C8     #
+###############################################################################################################
+
+#0xc001        0   0x0634fab2    0x001e      0x0a000143     50084     0x0634FAB2    0xda7a   0x0a000187      0xc350     0x0578
+#0x8000        0   0x063649d0   0x001e     0x0a000001     50084     0xf800be18     0x0200   0x0a000031       0xc350     0x0578
+#0x8000        0   0x592f4eee    0xf079      0x0a00003D     50084     0xf800be18     0x0200   0x0a000031      0xc350     0x0578    # JM Laptop
+ 0x8000         0   0x20006c61    0x14cc      0x0a000041     50084     0xf800be18     0x0200   0x0a000031      0xc350     0x0578    # B16 Linux PC (delta)
+
+
+
+
+
+------------------------------------------------------
+------------------------------------------------------
+	2. register_configgbe.db
+------------------------------------------------------
+------------------------------------------------------
+
+!Register table
+#  Type  #   C0   #   C1   #   C2   #   C3   #   C4   #   C5   #   C6   #   C7   #   C8   #  C9   #  C10
+###################################################################################
+     0     0x8300   0x8305   0x8307   0x8308   0x830b   
+     1     0x8301   0x8302   0x8304   0x8309   0x830c   0x830e   0x830f   0x8310
+
+!Value table
+#															                                Enable
+#                    SubEvtId      UseGbE      MultiQueue   Trig. Num.  InclTrgType  
+# Hub    #  Type  #     C0     #     C1     #     C2     #    C3     #      C4      
+##################################################################################
+    0x8000      0       0x8000          1            0        0xffffff         1      
+#  0xc001      0       0xc001          1            0        0xffffff         1      
+#  0xc002      0       0x8000          1            0        0xffffff         1
+
+
+
+
+
+#These values to not need to be written - for completeness only  
+#                    SubEvtDec     QueDec     FrameSize   RX enable    SubEvtSize   Evt/Queue    QueueClose  MaxQueueSize
+# Hub    #  Type  #     C0     #     C1     #     C2    #     C3     #     C4     #     C5     #     C6     #     C7     #
+#######################################################################################################
+# 0xff7f      1      0x00020001   0x00030062     0x578         1         59800         200        32000         60000
+
+	
+
+
+------------------------------------------------------
+------------------------------------------------------
+	3. register_configtdc.db
+------------------------------------------------------
+------------------------------------------------------
+
+# TDC / ADC config registers
+
+!Register table
+#  Type  #   C0   #   C1   #   C2   #   C3   #   C4   #   C5   #
+################################################################
+     0     0xc800   0xc801   0xc802   0xc803   0xc804   0xc805
+
+!Value table
+#                    Gnl Conf    Trg Window   Ch En 1-32   Ch En 33-64 RingBufSize    Invert
+# TDC    #  Type  #     C0     #     C1     #     C2     #     C3     #     C4    #     C5     #
+###########################################################################################
+
+#0xA001	      0   0x00000000   0x80640064   0x3fffffff   0x00000000   0x0000007c   0x00000000      # TRISTAN
+#0xA002       0   0x00000000   0x80640064   0x3fffffff   0x00000000   0x0000007c   0x00000000      # TRISTAN
+#0xA003       0   0x00000000   0x80640064   0x3fffffff   0x00000000   0x0000007c   0x00000000      # TRISTAN
+
+0xC310       0   0x00000000	  0x80640064   0x3fffffff   0x00000000   0x0000007c   0x00000000      # ADC1
+0xC311       0   0x00000000	  0x80640064   0x3fffffff   0x00000000   0x0000007c   0x00000000      # ADC2
+
+-------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+--------------------------------------
+START ACQUISITION WITH DABC Lib:
+--------------------------------------
+0. Change the path (if needed) of the trbsoft
+
+1. Run the script "startup_TRB49.sh" to startup TRB3 acquisition system
+
+    E.g.: 
+
+    /home/daq/DAQ_Software/TRB_DAQ_using_DABC/startup_TRB49.sh
+
+2. Start acquiring launching the script "startDABCnoSleep.sh" (after set the acquisition configuration in the file "EventBuilder_TRB49.xml")
+
+    E.g.: 
+
+    /home/daq/DAQ_Software/TRB_DAQ_using_DABC/startDABCnoSleep.sh
+
+    Note: in the file "EventBuilder_TRB49.xml" the following line should be filled with the directory and size of .HLD files:
+
+          <OutputPort name="Output1" url="hld://path_of_hlds_files_directory/dabc.hld?maxsize=size"/>  
+
+
+---------
+-------
+Notes:
+-------
+---------
+In the README file inside "/home/daq/DAQ_Software/trbsoft/daqtools/web" it is written:
+"If you need a CTS monitor, use the cts_gui script to start, if you just want the webserver use httpi."
+
+So, give a chance to "httpi" script!
+
+ 

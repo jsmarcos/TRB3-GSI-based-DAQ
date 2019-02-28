@@ -1,0 +1,30 @@
+
+
+//custom.StartExternalProcess( command,  arguments,  waitToFinish )
+//ssh odroid@10.0.0.1 'DISPLAY=:0 nohup /home/odroid/trbsoft/userscripts/trb49/startup_from_remote.sh'
+//custom.StartExternalProcess( "/home/jsm/Documents/Real-Time-Dat-Files-from-TRBReader/move_dat_files.sh", dat_files_directory_on_ANTS2)
+//core.StartExternalProcess("killall", ["-9", "rxvt"])
+
+//custom.StartExternalProcess( "ssh", ["odroid@10.0.0.1", "'DISPLAY=:0 nohup /home/odroid/trbsoft/userscripts/trb49/startup_from_remote.sh'"])
+
+function stop_acquisition()
+{
+             core.StartExternalProcess("ssh", ["odroid@10.0.0.1", "killall", "-9", "xterm"])
+}
+
+custom.StartExternalProcess( "/home/jsm/Documents/TRB3/TRB_DAQ_using_DABC/startDAQ_remotely.sh", [], true)
+
+core.sleep(13000)
+// Launch startDABCnoSleep.sh
+custom.StartExternalProcess( "/home/jsm/Documents/TRB3/TRB_DAQ_using_DABC/startDABCnoSleep.sh", [])
+
+core.sleep(2000)
+
+//Aquire
+custom.StartExternalProcess( "/home/jsm/Documents/TRB3/TRB_DAQ_using_DABC/start_remote_acquisition.sh", [])
+
+//acquire_some_seconds(8000)
+//stop_acquisition()
+
+
+

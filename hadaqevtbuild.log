@@ -1,0 +1,43 @@
+14:35:09   0.164442 base/src/DataIO.cxx:ShowInfo:73 /mnt/B16_Archive/hlds/2018-11-01/Pedestais/dabc18306143509.hld cannot open file for writing
+14:35:09   0.164497 base/src/Factory.cxx:CreateTransport:88 Output object hld:///mnt/B16_Archive/hlds/2018-11-01/Pedestais/dabc.hld?maxsize=100 cannot be initialized
+14:35:09   0.164661 base/src/Application.cxx:CallInitFunc:318 Cannot create output transport for port Combiner/Output1
+17:12:31   0.171939 base/src/DataIO.cxx:ShowInfo:73 /mnt/B16_Archive/hlds/2018-11-02/Slit_twoWCblocks_4sheetsPaper_27V/dabc18306171231.hld cannot open file for writing
+17:12:31   0.180446 base/src/Factory.cxx:CreateTransport:88 Output object hld:///mnt/B16_Archive/hlds/2018-11-02/Slit_twoWCblocks_4sheetsPaper_27V/dabc.hld?maxsize=100 cannot be initialized
+17:12:31   0.180540 base/src/Application.cxx:CallInitFunc:318 Cannot create output transport for port Combiner/Output1
+17:13:00   0.129348 base/src/DataIO.cxx:ShowInfo:73 /mnt/B16_Archive/hlds/2018-11-02/Slit_twoWCblocks_4sheetsPaper_27V/dabc18306171300.hld cannot open file for writing
+17:13:00   0.129379 base/src/Factory.cxx:CreateTransport:88 Output object hld:///mnt/B16_Archive/hlds/2018-11-02/Slit_twoWCblocks_4sheetsPaper_27V/dabc.hld?maxsize=100 cannot be initialized
+17:13:00   0.129482 base/src/Application.cxx:CallInitFunc:318 Cannot create output transport for port Combiner/Output1
+15:52:35   0.167724 base/src/DataIO.cxx:ShowInfo:73 /mnt/B16_Archive/hlds/2018-11-05/BarsTilted/dabc18309155235.hld cannot open file for writing
+15:52:35   0.179094 base/src/Factory.cxx:CreateTransport:88 Output object hld:///mnt/B16_Archive/hlds/2018-11-05/BarsTilted/dabc.hld?maxsize=100 cannot be initialized
+15:52:35   0.179234 base/src/Application.cxx:CallInitFunc:318 Cannot create output transport for port Combiner/Output1
+15:53:10   0.131999 base/src/DataIO.cxx:ShowInfo:73 /mnt/B16_Archive/hlds/2018-11-05/BarsTilted/dabc18309155310.hld cannot open file for writing
+15:53:10   0.132042 base/src/Factory.cxx:CreateTransport:88 Output object hld:///mnt/B16_Archive/hlds/2018-11-05/BarsTilted/dabc.hld?maxsize=100 cannot be initialized
+15:53:10   0.132137 base/src/Application.cxx:CallInitFunc:318 Cannot create output transport for port Combiner/Output1
+15:53:29   0.131335 base/src/DataIO.cxx:ShowInfo:73 /mnt/B16_Archive/hlds/2018-11-05/BarsTilted/dabc18309155329.hld cannot open file for writing
+15:53:29   0.131368 base/src/Factory.cxx:CreateTransport:88 Output object hld:///mnt/B16_Archive/hlds/2018-11-05/BarsTilted/dabc.hld?maxsize=100 cannot be initialized
+15:53:29   0.131445 base/src/Application.cxx:CallInitFunc:318 Cannot create output transport for port Combiner/Output1
+17:59:57   0.176004 base/src/DataIO.cxx:ShowInfo:73 /mnt/B16_Archive/hlds/2018-11-27/Natural/dabc18331175957.hld cannot open file for writing
+17:59:57   0.184910 base/src/Factory.cxx:CreateTransport:88 Output object hld:///mnt/B16_Archive/hlds/2018-11-27/Natural/dabc.hld?maxsize=100 cannot be initialized
+17:59:57   0.185009 base/src/Application.cxx:CallInitFunc:318 Cannot create output transport for port Combiner/Output1
+10:17:42 237240.096384 base/src/Publisher.cxx:ApplyEntryDiff:329 Command failed for rec 0 addr dabc://localhost:1237/App errcnt 1
+10:17:42 237240.120278 base/src/Publisher.cxx:ApplyEntryDiff:329 Command failed for rec 1 addr dabc://localhost:1237/Combiner errcnt 1
+10:17:42 237240.596536 base/src/Publisher.cxx:ApplyEntryDiff:329 Command failed for rec 0 addr dabc://localhost:1237/App errcnt 2
+10:17:42 237240.596615 base/src/Publisher.cxx:ApplyEntryDiff:329 Command failed for rec 1 addr dabc://localhost:1237/Combiner errcnt 2
+10:17:43 237241.096690 base/src/Publisher.cxx:ApplyEntryDiff:329 Command failed for rec 0 addr dabc://localhost:1237/App errcnt 3
+10:17:43 237241.096774 base/src/Publisher.cxx:ApplyEntryDiff:329 Command failed for rec 1 addr dabc://localhost:1237/Combiner errcnt 3
+10:17:43 237241.596866 base/src/Publisher.cxx:ApplyEntryDiff:329 Command failed for rec 0 addr dabc://localhost:1237/App errcnt 4
+10:17:43 237241.596955 base/src/Publisher.cxx:ApplyEntryDiff:329 Command failed for rec 1 addr dabc://localhost:1237/Combiner errcnt 4
+10:17:44 237242.096891 base/src/Publisher.cxx:ApplyEntryDiff:329 Command failed for rec 0 addr dabc://localhost:1237/App errcnt 5
+10:17:44 237242.096931 base/src/Publisher.cxx:ApplyEntryDiff:329 Command failed for rec 1 addr dabc://localhost:1237/Combiner errcnt 5
+11:54:53   0.131357 base/src/DataIO.cxx:ShowInfo:73 /mnt/B16_Archive/hlds/2018-12-14/25kHz_RandomGenerator/dabc18353115453.hld cannot open file for writing
+11:54:53   0.144006 base/src/Factory.cxx:CreateTransport:88 Output object hld:///mnt/B16_Archive/hlds/2018-12-14/25kHz_RandomGenerator/dabc.hld?maxsize=100 cannot be initialized
+11:54:53   0.144154 base/src/Application.cxx:CallInitFunc:318 Cannot create output transport for port Combiner/Output1
+17:42:16   0.144062 base/src/DataIO.cxx:ShowInfo:73 /mnt/B16_Archive/hlds/2018-12-19/Pedestals_Bias_20V/dabc18353174216.hld cannot open file for writing
+17:42:16   0.156691 base/src/Factory.cxx:CreateTransport:88 Output object hld:///mnt/B16_Archive/hlds/2018-12-19/Pedestals_Bias_20V/dabc.hld?maxsize=100 cannot be initialized
+17:42:16   0.156772 base/src/Application.cxx:CallInitFunc:318 Cannot create output transport for port Combiner/Output1
+19:19:39   0.140269 base/src/DataIO.cxx:ShowInfo:73 /mnt/B16_Archive/hlds/2018-12-19/Following_Protocol/TeflonCamera_LYSO/Pedestals_Bias_28V/dabc18353191939.hld cannot open file for writing
+19:19:39   0.143031 base/src/Factory.cxx:CreateTransport:88 Output object hld:///mnt/B16_Archive/hlds/2018-12-19/Following_Protocol/TeflonCamera_LYSO/Pedestals_Bias_28V/dabc.hld?maxsize=100 cannot be initialized
+19:19:39   0.143113 base/src/Application.cxx:CallInitFunc:318 Cannot create output transport for port Combiner/Output1
+12:09:42   0.155881 base/src/DataIO.cxx:ShowInfo:73 /mnt/B16_Archive/hlds/2018-12-23/GAGG_LG1mm_BlackAround_BlackOnBacks/Pedestlas_Bias_28V/dabc18357120942.hld cannot open file for writing
+12:09:42   0.180508 base/src/Factory.cxx:CreateTransport:88 Output object hld:///mnt/B16_Archive/hlds/2018-12-23/GAGG_LG1mm_BlackAround_BlackOnBacks/Pedestlas_Bias_28V/dabc.hld?maxsize=100 cannot be initialized
+12:09:42   0.180613 base/src/Application.cxx:CallInitFunc:318 Cannot create output transport for port Combiner/Output1

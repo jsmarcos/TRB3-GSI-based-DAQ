@@ -1,0 +1,1493 @@
+
+web.Disconnect()
+
+var system_scripts_directory = "/home/daq/DAQ_Software/TRB_DAQ_using_DABC"
+//-------------------------
+// Header settings
+//-------------------------
+// gui.horizontalLayout("h0", "")
+//        gui.labelNew("label_controller_ip_address", "h0", "TRB3 controller IP address: ")
+//        gui.editNew("edit_controller_ip_address", "h0", "127.0.0.1" )
+
+//var ip_server = "ws://192.168.3.92:"
+//var ip_server = "ws://10.0.0.1:"
+//var ip_server = "ws:\/\/" + gui.editGetText("edit_controller_ip_address") + ":"  // To use '/' as a string one must write '\/'
+var ip_server = "ws://127.0.0.1:"
+//var ip_server = "ws://10.0.0.62:"
+
+var port ="12345"
+var r = web.Connect(ip_server + port, true)
+web.SetTimeout( 25000 )
+
+gui.textNew("text_field", "")
+var r_o = JSON.parse(r)
+       if(r_o["result"] == true)
+             gui.textAppendPlainText("text_field", "Connection established with TRBreader in " + ip_server + port)
+
+// 'stop' variable is used to check if STOP button was clicked.
+var stop
+
+/************************   GUI    ************************/
+//gui.resize( 600,  300 )
+  
+msg.SetDialogTitle("TRB3 Acquisition GUI Info")
+msg.Clear( )
+msg.Append("1. Please, select the path of the following directories:") 
+msg.Append("")
+msg.Append("    > .HDLs files")
+msg.Append("    > Pedestal files (if required)")
+msg.Append("    > .DAT files, for remote TRBReader" )
+ 
+gui.horizontalLayout("h2", "")
+//       gui.addStretch("h2")
+       gui.buttonNew("prepareDAQ", "h2", "Connect TRB3 DAQ")
+       gui.setMinimumWidth("prepareDAQ", 180)
+       gui.setMinimumHeight("prepareDAQ", 50)
+       gui.labelNew("label_thrs_cts_ch9", "h2", "Thrs CTS Ch9: ")
+       gui.editNew("edit_thrs_cts_ch9", "h2", "80")
+       gui.labelNew("label_thrs_cts_ch10", "h2", "Thrs CTS Ch10: ")
+       gui.editNew("edit_thrs_cts_ch10", "h2", "160")
+       gui.buttonNew("button_change_thrs", "h2", "Change Thrs")
+       gui.addStretch("h2")
+       gui.buttonNew("stopDAQ", "h2", "Disconnect TRB3 DAQ")
+       gui.setMinimumWidth("stopDAQ", 180)
+       gui.setMinimumHeight("stopDAQ", 50)
+
+
+gui.horizontalLayout("h_space1", "")
+       gui.labelNew("label_space1", "h_space1", "")
+
+gui.horizontalLayout("h_line2", "")
+gui.addHoizontalLine("h_line2")
+
+gui.horizontalLayout("h_Simple_acquisition_section", "")
+gui.labelNew("label_simple_acquisition", "h_Simple_acquisition_section", "ACQUISITION:                                                                              << ACQUISITION - SIMPLE (no real-time) >>")
+
+gui.horizontalLayout("h_line2b", "")
+gui.addHoizontalLine("h_line2b")
+
+gui.horizontalLayout("h1", "")
+       gui.labelNew("label_hlds_files_dir", "h1", "SET .HLD files directory (e.g. External disk): ")
+       //gui.editNew("edit_hlds_files_dir", "h1", "/data/GAGGCam/hlds/2018-07-14/Test")
+       //gui.editNew("edit_hlds_files_dir", "h1", "/home/jsm/Downloads/HLDS")
+       gui.editNew("edit_hlds_files_dir", "h1", "/media/daq/B16_Archive/hlds/2019-01-14/Acquisition1")
+
+       //gui.addStretch("h1")
+       gui.labelNew("label_hld_file_size", "h1", ".hld file size in Mega: ")
+       gui.editNew("edit_hld_file_size", "h1", "100") // For tests I'm I'using .hld files with just 5 MB
+
+
+gui.horizontalLayout("h3", "")
+gui.buttonNew("STARTSimpleAcquisition", "h3", "1) START acquisition (time selected):") 
+gui.setMinimumWidth("STARTSimpleAcquisition", 330)
+gui.setMinimumHeight("STARTSimpleAcquisition", 70)
+gui.setEnabled("STARTSimpleAcquisition",  false)
+
+//gui.editNew("edit_num_hld_files", "h3", "5") 
+//gui.labelNew("label_hld_files", "h3", ".hld files")
+gui.labelNew("label_acquisition_time_seconds", "h3", "Acquisition time (seconds): ")
+gui.setEnabled("label_acquisition_time_seconds",  false )
+gui.editNew("edit_acquisition_time_seconds", "h3", "9") 
+gui.setEnabled("edit_acquisition_time_seconds",  false )
+gui.buttonNew("stopAcquisition", "h3", "STOP acquisition")
+gui.setMinimumWidth("stopAcquisition", 200)
+gui.setMinimumHeight("stopAcquisition", 70)
+gui.setEnabled("stopAcquisition",  false )
+ // gui.addStretch("h3")
+
+gui.horizontalLayout("h4", "")
+       gui.buttonNew("button_process_hld_files", "h4", "2) Process .HLD files -> generate .DAT files in the same directory")
+       gui.addStretch("h4")
+       gui.buttonNew("start_acquisition_indefinitely", "h4", "OR: START Acquisition until stopped")
+       gui.setEnabled( "start_acquisition_indefinitely",  false )
+
+gui.horizontalLayout("h_space3", "")
+       gui.labelNew("label_space3", "h_space3", "")
+
+gui.horizontalLayout("h_line1", "")
+gui.addHoizontalLine("h_line1")
+
+gui.horizontalLayout("h_pedestals_section", "")
+gui.labelNew("label_pedestals_section", "h_pedestals_section", "PEDESTALS:                                                                                    << PEDESTALS - If not already available >>")
+gui.addStretch("h_pedestals_section")
+
+gui.horizontalLayout("h_line1b", "")
+gui.addHoizontalLine("h_line1b")
+
+//gui.horizontalLayout("h_space4", "")
+//       gui.labelNew("label_space4", "h_space4", "")
+
+gui.horizontalLayout("h_pedestals_1", "")
+       gui.labelNew("label_pedestals_hlds_files_dir", "h_pedestals_1", "SET Pedestals .HLD files directory (default: inside data dir.): ")
+       gui.editNew("edit_pedestals_hlds_files_dir", "h_pedestals_1", gui.editGetText("edit_hlds_files_dir") + "/Pedestals")
+       gui.setToolTip("edit_pedestals_hlds_files_dir", "Default: \"Pedestals\" inside the data dir. specified for Acquisition")
+gui.horizontalLayout("h_pedestals_2", "")
+       gui.labelNew("label_pedestals_file_size", "h_pedestals_2", "Pedestals file size (MB): ")
+       gui.editNew("edit_pedestals_file_size", "h_pedestals_2", "50")
+       gui.labelNew("label_pedestals_acq_time", "h_pedestals_2", "Pedestals Acq. Time (s)")
+       gui.editNew("edit_pedestals_acq_time", "h_pedestals_2", "30")
+       gui.buttonNew("start_pedestals_acquisition", "h_pedestals_2", "1) START Pedestals Acq.")
+       gui.buttonNew("stop_pedestals_acquisition", "h_pedestals_2", "STOP Pedestals Acq.")
+gui.horizontalLayout("h_pedestals_3", "")
+       gui.buttonNew("button_process_pedestals_hlds_files", "h_pedestals_3", "2) Process Pedestals .HLD files")
+       gui.buttonNew("button_calculate_pedestals", "h_pedestals_3", "3) Calculate Pedestals (from data on the Pedestals dir above")
+       gui.buttonNew("button_set_pedestals_in_add_preprocessing", "h_pedestals_3", "4) Set Pedestals in PreProcessing 'add'")
+
+       
+gui.horizontalLayout("h_space5", "")
+       gui.labelNew("label_space5", "h_space5", "")
+
+gui.horizontalLayout("h_line3", "")
+gui.addHoizontalLine("h_line3")
+
+gui.horizontalLayout("h_real_time", "")
+gui.labelNew("label_real_time", "h_real_time", "REAL-TIME:                                                                                                      << REAL-TIME >>")
+gui.addStretch("h_real_time")
+
+gui.horizontalLayout("h_line3b", "")
+gui.addHoizontalLine("h_line3b")
+
+//gui.horizontalLayout("h_space6", "")
+//       gui.labelNew("label_space6", "h_space6", "")
+
+gui.horizontalLayout("h_real_time_2", "")
+       gui.labelNew("label_real_time_hlds_files_dir", "h_real_time_2", "SET Real-time .HLD files directory (e.g. External disk): ")
+       gui.editNew("edit_real_time_hlds_files_dir", "h_real_time_2", "/media/daq/B16_Archive/hlds/Real-Time/run1")
+
+       //gui.addStretch("h1")
+       gui.labelNew("label_real_time_hld_file_size", "h_real_time_2", "Real-time .HLD file size (MB): ")
+       gui.editNew("edit_real_time_hld_file_size", "h_real_time_2", "15") // 
+
+gui.horizontalLayout("h5a", "")
+            gui.labelNew("label_DAT_files_dir", "h5a", "(Only for remote TRBReader) SET .DAT files directory (files sent to ANTS2 machine): ")
+            gui.editNew("edit_DAT_files_dir", "h5a", "/media/daq/B16_Archive/hlds/Real-Time/Local_DAT_files")
+            //gui.addStretch("h5a")
+
+gui.horizontalLayout("h5", "")
+       gui.labelNew("label_real_time_buffer_size", "h5", "Real-time Buffer size: ")
+       gui.editNew("edit_real_time_buffer_size", "h5", "50000")
+       gui.addStretch("h5")
+       gui.labelNew("label_number_events_to_store", "h5", "Number of events to be stored: ")
+       gui.editNew("edit_num_events_to_store", "h5", "1000000")
+
+gui.horizontalLayout("h6", "")
+       gui.buttonNew("acquire_real_time", "h6", "START Acquire in Real-time")
+       gui.buttonNew("stop_real_time_aquisition", "h6", "STOP Real-time Aquisition")
+       gui.addStretch("h6")
+       gui.buttonNew("button_show_image", "h6", "Show Offline image ")
+       gui.setEnabled( "button_show_image",  false )
+       gui.labelNew("label_with", "h6", "with ")
+       gui.editNew("edit_num_events_to_show", "h6","200000")
+       var max_events_to_show = gui.editGetText("edit_num_events_to_store")
+       gui.labelNew("label_events", "h6", "events (max: " + max_events_to_show + ")")
+
+
+gui.horizontalLayout("h7", "")
+      //gui.labelNew("label_chi2_control", "h7", "Activate Chi2 MONITORING? ")
+      gui.checkboxNew("checkbox_activate_chi2_monitoring", "h7", "Activate Chi2 MONITORING", false)
+      // gui.editNew("edit_chi2_control", "h7", "false")
+     gui.labelNew("label_chi2_reference_value", "h7", "|  Chi2 manually set Reference Value: ")
+     gui.setEnabled("label_chi2_reference_value", gui.checkboxIsChecked("checkbox_activate_chi2_monitoring"))
+     gui.editNew("edit_chi2_reference_value", "h7", "1.4")
+     gui.setEnabled("edit_chi2_reference_value", gui.checkboxIsChecked("checkbox_activate_chi2_monitoring"))
+     gui.labelNew("label_num_events_to_control_chi2", "h7", "Num events to control Chi2: ")
+     gui.setEnabled("label_num_events_to_control_chi2", gui.checkboxIsChecked("checkbox_activate_chi2_monitoring"))
+     gui.editNew("edit_num_events_to_control_chi2", "h7", "1000")
+     gui.setEnabled("edit_num_events_to_control_chi2", gui.checkboxIsChecked("checkbox_activate_chi2_monitoring"))
+     gui.labelNew("label_margin_factor", "h7", "Goodness margin factor [0.0 - 1.0]: ")
+     gui.setEnabled("label_margin_factor", gui.checkboxIsChecked("checkbox_activate_chi2_monitoring"))
+     gui.editNew("edit_margin_factor",  "h7", "0.2")
+     gui.setEnabled("edit_margin_factor", gui.checkboxIsChecked("checkbox_activate_chi2_monitoring"))
+     gui.addStretch("h7")
+
+gui.horizontalLayout("h7b", "")
+    gui.checkboxNew("checkbox_delete_hlds_during_real_time", "h7b", "Delete processed .HLDs in real-time", true)
+    gui.buttonNew("clearRealTimeBuffer", "h7b", "RESET")
+    gui.addStretch("h7b")
+    gui.buttonNew("button_copy_real_time_dir_to_pedestals_dir", "h7b", "Copy Real-Time .hld files directory to Pedestals dirrectory")
+    gui.addStretch("h7b")
+    gui.buttonNew("test", "h7b", "Test")
+    gui.buttonNew("stop", "h7b", "Stop_tmp")
+
+//gui.horizontalLayout("h9", "")
+       //gui.buttonNew("calculatePedestalsButton", "h7b", "PEDESTALS: 1) acquire data (no source should be present), 2) calculate Pedestals and 3) set them in ANTS2")
+          
+gui.horizontalLayout("h_space7", "")
+       gui.labelNew("label_space6", "h_space7", "")
+
+gui.horizontalLayout("h_line4", "")
+gui.addHoizontalLine("h_line4")
+
+gui.horizontalLayout("h_LRFs", "")
+gui.labelNew("label_lrfs", "h_LRFs", "LRFs:                                                                                               << LRFs  - Light Response Functions >>")
+gui.addStretch("h_LRFs")
+
+gui.horizontalLayout("h_line4b", "")
+gui.addHoizontalLine("h_line4b")
+
+gui.horizontalLayout("h11", "")
+
+       gui.labelNew("label_dir_of_flood_field_for_LRFs", "h11", "Directory of Flood field for LRFs: ")
+       gui.editNew("edit_dir_of_flood_field_for_LRFs", "h11", gui.editGetText("edit_hlds_files_dir"))
+
+gui.horizontalLayout("h12", "")
+
+        gui.labelNew("label_compress_factor", "h12", "Comp. factor: ")
+       gui.editNew("edit_compress_factor", "h12", "6")
+       gui.labelNew("label_switchover", "h12", "Switchover: ")
+       gui.editNew("edit_switchover", "h12", "3.3")
+       gui.labelNew("label_smoothness", "h12", "Smoothness: ")
+       gui.editNew("edit_smoothness", "h12", "5.1")
+       gui.buttonNew("CalculateLRFsButton", "h12", "Calculate new LRFs")
+
+       //gui.addStretch("h11")
+      
+
+function change_max_label()
+{
+      var max =  gui.editGetText("edit_num_events_to_store")
+      gui.labelSetText("label_events",  "events (max: " + max + ")")
+      gui.show()
+}
+
+function change_pedestals_dir()
+{
+       var dir = gui.editGetText("edit_hlds_files_dir")
+       gui.editSetText("edit_pedestals_hlds_files_dir", dir + "/Pedestals")
+
+}
+
+function change_pedestals_dir_for_real_time()
+{
+       var dir = gui.editGetText("edit_real_time_hlds_files_dir")
+       gui.editSetText("edit_pedestals_hlds_files_dir", dir + "/Pedestals")
+}
+
+function change_LRFs_dir()
+{
+                 var dir = gui.editGetText("edit_hlds_files_dir")
+                 gui.editSetText("edit_dir_of_flood_field_for_LRFs", dir)
+}
+
+function change_compress_factor()
+{
+       compression_factor = custom.convertStringToDouble(gui.editGetText("edit_compress_factor"))//6
+}
+
+function change_smoothness()
+{
+      compression_lam_smoothness =custom.convertStringToDouble(gui.editGetText("edit_smoothness")) // 5.1
+}
+
+function change_switchover()
+{
+       var compression_r0_switchover =custom.convertStringToDouble(gui.editGetText("edit_switchover")) // 3.3
+
+}
+
+function switch_chi2_label_and_edit_ref_value()
+{
+       if (gui.checkboxIsChecked("checkbox_activate_chi2_monitoring"))
+       {
+                     gui.setEnabled("label_chi2_reference_value", true)
+                     gui.setEnabled("edit_chi2_reference_value", true)
+                     gui.setEnabled("label_num_events_to_control_chi2", true)
+                     gui.setEnabled("edit_num_events_to_control_chi2", true)
+                     gui.setEnabled("label_margin_factor", true)
+                     gui.setEnabled("edit_margin_factor", true)
+       }
+       else 
+       {
+                      gui.setEnabled("label_chi2_reference_value", false)
+                      gui.setEnabled("edit_chi2_reference_value", false)
+                     gui.setEnabled("label_num_events_to_control_chi2", false)
+                     gui.setEnabled("edit_num_events_to_control_chi2", false)
+                     gui.setEnabled("label_margin_factor", false)
+                     gui.setEnabled("edit_margin_factor", false)
+       }
+}
+
+
+gui.buttonOnClick("prepareDAQ", prepare_DAQ)
+gui.buttonOnClick("stopDAQ", stop_DAQ)
+gui.buttonOnClick("STARTSimpleAcquisition", start_simple_acquisition)
+gui.buttonOnClick("stopAcquisition", stop_acquisition)
+gui.buttonOnClick("button_process_hld_files", process_hld_files)
+gui.buttonOnClick("button_change_thrs", change_CTS_trigger_thresholds)
+gui.buttonOnClick("acquire_real_time", acquire_real_time)
+//gui.buttonOnClick("acquire_real_time", start_real_time_acquisition)  //just start for test
+gui.buttonOnClick("stop_real_time_aquisition", stop_real_time_acquisition_test)
+gui.buttonOnClick("clearRealTimeBuffer", clearRealTimeBuffer)
+//gui.buttonOnClick("calculatePedestalsButton", pedestalsFunctions)
+gui.buttonOnClick("button_copy_real_time_dir_to_pedestals_dir", copy_real_time_dir_to_pedestals_dir)
+gui.buttonOnClick("CalculateLRFsButton", calculateLRFs)
+gui.buttonOnClick("start_pedestals_acquisition", start_pedestals_acquisition)
+gui.buttonOnClick("stop_pedestals_acquisition", stop_acquisition)
+gui.buttonOnClick("button_process_pedestals_hlds_files", process_pedestals_hlds)
+gui.buttonOnClick("button_calculate_pedestals", calculatePedestals)
+gui.buttonOnClick("button_set_pedestals_in_add_preprocessing", set_pedestals_in_add_preprocessing)
+
+gui.editOnTextChanged("edit_num_events_to_store",  change_max_label)
+gui.editOnTextChanged("edit_hlds_files_dir", change_pedestals_dir)
+gui.editOnTextChanged("edit_hlds_files_dir", change_LRFs_dir)
+gui.editOnTextChanged("edit_real_time_hlds_files_dir", change_pedestals_dir_for_real_time)
+gui.editOnTextChanged("edit_compress_factor", change_compress_factor)
+gui.editOnTextChanged("edit_smoothness", change_smoothness)
+gui.editOnTextChanged("edit_switchover", change_switchover)
+gui.checkboxOnClick("checkbox_activate_chi2_monitoring", switch_chi2_label_and_edit_ref_value)
+
+gui.setWidgetTitle("TRB3 Aquisition ANTS2 GUI")
+gui.resize(800, 600)
+gui.show()
+
+
+function prepare_DAQ()
+{
+       var timeout = 45000  // Please, check if this value is ~20% higher than the average time (in milliseconds) that TRB3 takes to start up (reference value: ~25000 ms)
+       var elapsed_time = 0
+
+       core.StartExternalProcess( system_scripts_directory + "/startDAQ_remotely.sh", [], true, 2000)
+
+       custom.startTimer2()
+       core.StartExternalProcess( system_scripts_directory + "/Aux_scripts/open_url2.sh", ["10.0.0.1:1234"], true, timeout)
+       //core.sleep(25000)
+      elapsed_time = custom.getElapsedTimeTimer2()
+      core.print("elapsed_time: " + elapsed_time)
+      
+       if(elapsed_time < timeout)
+       {
+              change_CTS_trigger_thresholds()
+
+              gui.setEnabled("STARTSimpleAcquisition",  true )
+              gui.setEnabled("label_acquisition_time_seconds",  true )
+              gui.setEnabled("edit_acquisition_time_seconds",  true )
+              
+             gui.textAppendPlainText("text_field", "Connection established with TRB3 controller machine.\nTRB3 DAQ started up. CTS web control available. Acquisitions can be done.")
+       }
+       else 
+             gui.textAppendPlainText("text_field", "TRB3 DAQ NOT prepared yet. CTS webC control NOT available.\nPlease check if the controller machine is switched on and that you can ping it.")
+
+
+}
+
+function start_simple_acquisition()
+{
+       // Create the directory chosen by the user (test field) and Write in the EventBuilder.xml file the directory of HLDs files and the file size in MB.
+       create_hlds_dir_and_write_into_xml_hlds_dir_and_size()
+       core.sleep(1000) // check if there is need for this
+
+       // Launch startDABCnoSleep.sh
+       custom.StartExternalProcess( system_scripts_directory + "/startDABCnoSleep.sh", [], true)
+       core.sleep(1000)
+       
+       // Set the trigger thresholds (taken from the respective GUI textfields)
+       //change_CTS_trigger_thresholds()
+
+       // START REMOTE ACQUISITION (Switch ON the Ch9 and Ch10 in TRB CTS web controller). Note that the script below calls a script from Odroid (controller machine) passing the time of acquisition (in seconds) as argument. This way the switch off of the Ch9 and Ch10 is made in the Odroid.
+       custom.StartExternalProcess( "xterm", ["-e", system_scripts_directory + "/start_remote_acquisition.sh"])
+
+       gui.setEnabled("stopAcquisition",  true )
+       
+       // Call stop acquisition after the selected acquisition time (actually kill xterm)
+       var acquisition_time = gui.editGetText("edit_acquisition_time_seconds")
+       core.print("Acquisition time (s): " +  acquisition_time)
+       core.sleep(acquisition_time * 1000 * 2.2) // sleep is not relly in ms!!! is a shorter time.. need to multiply by a factor of say, 2.4
+       // core.sleep(acquisition_time * 1000)
+
+       // As now the stop function sends switch off command, the start script can be the same used for real-time
+      // stop_acquisition()
+       close_xterms()
+}
+
+function close_xterms()
+{
+          // kill locally the xterm consoles
+              custom.StartExternalProcess( "killall", ["-9", "xterm"])
+}
+
+function stop_acquisition()
+{
+       //NOTE: there is a function called stop_real_time_acquisition() to be used with Real-time
+       
+        // STOP REMOTE ACQUISITION (Switch OFF the Ch9 and Ch10 in TRB CTS web controller).
+        //   custom.StartExternalProcess( "xterm", ["-e", "/home/jsm/Documents/TRB3/TRB_DAQ_using_DABC/stop_acquisition.sh"])
+       custom.StartExternalProcess(system_scripts_directory + "/stop_remote_acquisition.sh", [])
+
+       // kill locally the xterm consoles
+       custom.StartExternalProcess( "killall", ["-9", "xterm"])
+
+       //stop = true
+}
+
+function stop_DAQ()
+{
+             custom.StartExternalProcess("ssh", ["odroid@10.0.0.1", "killall", "-9", "xterm"])
+}
+
+function create_hlds_dir_and_write_into_xml_hlds_dir_and_size()
+{
+       var s_hlds_files_dir = gui.editGetText("edit_hlds_files_dir")
+       core.print(s_hlds_files_dir)
+
+       var hld_file_size_mega = gui.editGetText("edit_hld_file_size")
+       core.print(hld_file_size_mega)
+
+      var acquisition_time = gui.editGetText("edit_acquisition_time_seconds")
+      core.print("Acquisition time (s): " +  acquisition_time)
+
+       var thr_ch9 = gui.editGetText("edit_thrs_cts_ch9")
+       var thr_ch10 = gui.editGetText("edit_thrs_cts_ch10")
+
+       var trb_daq_software_dir = system_scripts_directory
+       var script_cmd = trb_daq_software_dir + "/create_hlds_dir_and_substitute_dir_and_size_in_EventBuilder_xml.sh"
+       core.print(script_cmd)
+       custom.StartExternalProcess(script_cmd, [s_hlds_files_dir, hld_file_size_mega, acquisition_time, thr_ch9, thr_ch10])
+       
+}
+
+
+function create_real_time_hlds_dir_and_write_into_xml_hlds_dir_and_size()
+{
+       var s_real_time_hlds_files_dir = gui.editGetText("edit_real_time_hlds_files_dir")
+       core.print(s_real_time_hlds_files_dir)
+
+       var real_time_hld_file_size_mega = gui.editGetText("edit_real_time_hld_file_size")
+       core.print(real_time_hld_file_size_mega)
+
+       // No need for this time. It is only here touse the same script below for the changes in the .XML configuration file (Event Builder)
+       var acquisition_time = gui.editGetText("edit_acquisition_time_seconds")
+    
+       var thr_ch9 = gui.editGetText("edit_thrs_cts_ch9")
+       var thr_ch10 = gui.editGetText("edit_thrs_cts_ch10")
+
+       var trb_daq_software_dir =  system_scripts_directory
+       var script_cmd = trb_daq_software_dir + "/create_hlds_dir_and_substitute_dir_and_size_in_EventBuilder_xml.sh"
+       core.print(script_cmd)
+       custom.StartExternalProcess(script_cmd, [s_real_time_hlds_files_dir, real_time_hld_file_size_mega, acquisition_time, thr_ch9, thr_ch10])
+       
+}
+
+
+function create_pedestals_hlds_dir_and_write_into_xml_pedestals_hlds_dir_size_and_acq_time()
+{
+       var s_pedestals_hlds_files_dir = gui.editGetText("edit_pedestals_hlds_files_dir")
+       core.print("Pedestals dir: " + s_pedestals_hlds_files_dir)
+
+       var pedestals_hld_file_size_mega = gui.editGetText("edit_pedestals_file_size")
+       core.print("Pedestals file size: " + pedestals_hld_file_size_mega)
+
+      var pedestals_acquisition_time = gui.editGetText("edit_pedestals_acq_time")
+      core.print("Pedestals acquisition time (s): " +  pedestals_acquisition_time)
+
+       var trb_daq_software_dir = system_scripts_directory
+       var script_cmd = trb_daq_software_dir + "/create_pedestals_hlds_dir_and_substitute_dir_and_size_in_EventBuilder_xml.sh"
+       core.print(script_cmd)
+       custom.StartExternalProcess(script_cmd, [s_pedestals_hlds_files_dir, pedestals_hld_file_size_mega, pedestals_acquisition_time])
+       
+}
+
+
+function change_CTS_trigger_thresholds()
+{
+       var thr_ch9 = gui.editGetText("edit_thrs_cts_ch9")
+       var thr_ch10 = gui.editGetText("edit_thrs_cts_ch10")
+
+       var trb_daq_software_dir = system_scripts_directory
+
+       // Rewrite the thrs in the scipt file that call executes a ssh command to run a remote script in Odroid
+       var script_cmd1 = trb_daq_software_dir + "/set_Thresholds_CTS_Trigger_channels_9_and_10.sh"
+       custom.StartExternalProcess(script_cmd1, [thr_ch9, thr_ch10])
+
+       core.sleep(1000)
+
+       var script_cmd2 = trb_daq_software_dir + "/remote_change_CTS_trigger_thresholds.sh"
+       custom.StartExternalProcess(script_cmd2, [])
+
+}
+
+function copy_real_time_dir_to_pedestals_dir()
+{
+       var dir = gui.editGetText("edit_real_time_hlds_files_dir")
+       gui.editSetText("edit_pedestals_hlds_files_dir", dir + "/Pedestals")
+}
+
+function stop_real_time_acquisition()
+{
+      // Send a command to start in the remote controller (Odroid) a script that call the trbcmds to switch off the Ch9 and Ch10.
+          
+      // STOP REMOTE ACQUISITION (Switch OFF the Ch9 and Ch10 in TRB CTS web controller).
+      //custom.StartExternalProcess( "xterm", ["-e", "/home/jsm/Documents/TRB3/TRB_DAQ_using_DABC/stop_remote_acquisition.sh"])
+      custom.StartExternalProcess(system_scripts_directory + "/stop_remote_acquisition.sh", [])
+      
+      // kill locally the xterm consoles
+      custom.StartExternalProcess( "killall", ["-9", "xterm"])
+
+       stop = true
+}
+
+function process_hld_files()
+{
+       var dir = gui.editGetText("edit_hlds_files_dir")
+       processHLDsAndSendDATFiles_2(dir)
+}
+
+function process_pedestals_hlds()
+{
+       var dir = gui.editGetText("edit_pedestals_hlds_files_dir")
+       //processHLDsAndSendDATFiles_2(dir)
+       processHLDsAndSendDATFiles(dir, "pedestals")
+}
+
+function stop_real_time_acquisition_test()
+{
+      // Send a command to start in the remote controller (Odroid) a script that call the trbcmds to switch off the Ch9 and Ch10.
+          
+      // STOP REMOTE ACQUISITION (Switch OFF the Ch9 and Ch10 in TRB CTS web controller).
+      //custom.StartExternalProcess( "xterm", ["-e", "/home/jsm/Documents/TRB3/TRB_DAQ_using_DABC/stop_remote_acquisition.sh"])
+      custom.StartExternalProcess(system_scripts_directory + "/stop_remote_acquisition.sh", [])
+      
+      // kill locally the xterm consoles
+      custom.StartExternalProcess( "killall", ["-9", "xterm"])
+
+       stop = true
+
+        core.sleep(2000)
+        
+       var dat_files_directory_on_ANTS2 = ""
+
+        // SAVE reconstructed events:
+        if (ip_server == "ws://127.0.0.1:")
+              {
+                    dat_files_directory_on_ANTS2 = gui.editGetText("edit_real_time_hlds_files_dir") + "/"
+              }
+        else  // TRBReader is running a remote machine (so the .dat files are received in the ANTS2 GUI script machine in the directory below)
+              dat_files_directory_on_ANTS2 = gui.editGetText("edit_DAT_files_dir") + "/"
+              
+       //var date_timestamp =  core.GetDateTimeStamp()
+       core.print("Save reconsctruted data to: "+ dat_files_directory_on_ANTS2 + "savedReconsctructedEvents.txt")
+              var saved = custom.saveLastReconstructedEventsInBufferAsText( dat_files_directory_on_ANTS2 + "savedReconsctructedEvents.txt",  max_events_to_show )
+              //var saved = rec.saveLastReconstructedEventsInBufferAsText( dat_files_directory_on_ANTS2 + "savedReconsctructedEvents.txt",  max_events_to_show )
+              core.print("Result from saving rec data: " + saved)
+              // Allow to show saved events
+             // gui.setEnabled( "button_show_image",  true )
+       
+              grwin.SaveImage( dat_files_directory_on_ANTS2 + "last_real_time_reconstruction.png")
+
+              // MOVE .dat files to Backup directory
+              //core.StartExternalProcess( "/home/jsm/Documents/Real-Time-Dat-Files-from-TRBReader/move_dat_files.sh", dat_files_directory_on_ANTS2)
+              custom.StartExternalProcess(system_scripts_directory + "/Aux_scripts/move_dat_files2.sh", dat_files_directory_on_ANTS2)
+              
+
+}
+
+function start_real_time_acquisition()
+{
+       // Create the directory chosen by the user (test field) and Write in the EventBuilder.xml file the directory of HLDs files and the file size in MB.
+       //create_hlds_dir_and_write_into_xml_hlds_dir_and_size()
+       create_real_time_hlds_dir_and_write_into_xml_hlds_dir_and_size()
+       core.sleep(1000)
+
+       // Launch startDABCnoSleep.sh
+       custom.StartExternalProcess(system_scripts_directory + "/startDABCnoSleep.sh", [])
+       // custom.StartExternalProcess( " xfce4-terminal", ["-H", "-x", "ps", "-ejH", "/home/jsm/Documents/TRB3/TRB_DAQ_using_DABC/startDABCnoSleep.sh"])
+       core.sleep(1000)
+       
+       // Set the trigger thresholds (taken from the respective GUI textfields)
+       //change_CTS_trigger_thresholds()
+
+       // START ACQUISITION (Switch on the Ch9 and Ch10 in TRB CTS web controller).
+       custom.StartExternalProcess( "xterm", ["-e", system_scripts_directory + "/start_remote_non_stop_acquisition.sh"])
+
+       gui.setEnabled("stopAcquisition",  true )
+//core.sleep(5000)
+}
+
+
+function start_pedestals_acquisition()
+{
+       // 1) SET pedestals directory, size of the .hld files and acquisition time into the .xml config file 
+       create_pedestals_hlds_dir_and_write_into_xml_pedestals_hlds_dir_size_and_acq_time()
+
+       // 2) Launch startDABCnoSleep.sh  (with parameters from EventBuilder.xml
+       custom.StartExternalProcess( system_scripts_directory + "/startDABCnoSleep.sh", [])
+
+      // 3) START pedestals acquisition (Call a remote script)
+        // custom.StartExternalProcess("ssh", ["odroid@10.0.0.1", "/home/odroid/trbsoft/trbnettools/bin/trbcmd", "w", "0x8000", "0xa101","0xffff0004"])
+       custom.StartExternalProcess( "xterm", ["-e", system_scripts_directory +"/start_remote_acquisition_of_pedestals.sh"])
+       
+       gui.setEnabled("stop_pedestals_acquisition",  true )
+              
+       // Call stop acquisition after the selected acquisition time (actually, simply kills xterm in the host side. Because the switch off in done after the selected time in the Odroid (controller) side)
+       var pedestals_acquisition_time = gui.editGetText("edit_pedestals_acq_time")
+
+       core.print("Pedestals acquisition time (s): " +  pedestals_acquisition_time)
+       core.sleep(pedestals_acquisition_time * 1000 * 2.2) // sleep is not relly in ms!!! is a shorter time.. need to multiply by a factor of say, 2.4
+
+       // Close opened xterm sessions to allow new acquisitions (problems when there is some xterm already opened in the host (ANT2 GUI script) side.
+       close_xterms()
+}
+
+//var dat_files_directory_on_ANTS2 = "/home/jsm/Documents/Real-Time-Dat-Files-from-TRBReader/"
+
+
+// ----  TRBreader Function -----
+function sendfile2(filename)
+{
+       // Note that 'hlds_directory' should be initialized before (sent to TRBReader)
+       server.SendFile(filename) 
+}
+ // Send the sendfile2 function script command to TRBreader
+  r = web.SendText(sendfile2.toString())
+  core.print(r)
+
+
+//---------- TRBReader Function -----------
+function delete_hlds_and_dat_files_on_real_time_directory(dir)
+{
+       // Only works for files in the localhost 
+        custom.StartExternalProcess(system_scripts_directory + "/Aux_scripts/delete_hlds_and_dat.sh", [dir])
+}
+r = web.SendText(delete_hlds_and_dat_files_on_real_time_directory.toString())
+
+
+//------------- TRBReader Function ------------
+function startPedestalsAcquisition2()
+{
+       // Activate "Random Pulser 0" in CTS web browser "Trigger Channels"
+       core.StartExternalProcess("trbcmd", ["w", "0x8000", "0xa101", "0xffff0004"])
+}
+r = web.SendText(startPedestalsAcquisition2.toString())
+
+
+function configANTS_Rec_and_Vis()
+{
+       // Read this vale from GUI
+       var max_events_to_load = 100000
+       config.Replace( "DetectorConfig.LoadExpDataConfig.Preprocessing" , true)
+       config.Replace( "DetectorConfig.LoadExpDataConfig.LoadFirst",  max_events_to_load)
+}
+
+
+function acquire_real_time()
+{
+       // "STOP Real-time Aquisition" button was not pressed.
+       stop = false
+
+       // Directory of the acquired .hlds files (it can be an external disk)
+       var s_hlds_files_dir = gui.editGetText("edit_real_time_hlds_files_dir")
+       core.print(".hld files directory: " + s_hlds_files_dir)
+       var hlds_directory_on_TRBReader = "\"" + s_hlds_files_dir + "/\"" 
+
+       // Directory of the processed files (.dat) in the machine where this script is running, sent from the machine where TREReader is running
+       var dat_files_directory_on_ANTS2 = gui.editGetText("edit_DAT_files_dir") //+ "/"
+       core.print("dat_files_directory_on_ANTS2, DAT files dir: " + dat_files_directory_on_ANTS2)
+
+       //------------------------------------------
+       // ----- START ACQUISITION -----
+       //------------------------------------------
+       start_real_time_acquisition()
+       //------------------------------------------
+       //------------------------------------------
+
+       core.sleep(3000) //check if it is needed
+       //----------------------------------------------------------------------------------------------------------
+       // Acquire indefinetly until STOP running acquisition button is pressed:
+       //----------------------------------------------------------------------------------------------------------
+   
+       core.print("> Real-time acquisition started...")
+       gui.textAppendPlainText("text_field", "Real-time acquisition started...")
+
+       //----------------------------------------------------------------------------------------------------------------------
+       // Call ANTS2 configuration function (configure Reconstruction and Visualization)
+       //----------------------------------------------------------------------------------------------------------------------
+       configANTS_Rec_and_Vis()
+       core.print("ANTS2 configuration for reconstruction and visualization..... done.")
+       //----------------------------------------------------------------------------------------------------------------------
+
+       // Other alternative later!!!!!
+       var first_iteration_in_the_cycle = true
+       var first_search_for_dat_files = true
+
+                                   //var hlds_directory_on_TRBReader = "\"/data/GAGGCam/hlds/Real-Time/Test/\""
+       events.ClearEvents( )
+       core.print("Events cleared...")
+       gui.textAppendPlainText("text_field", "Previous events cleared...")
+
+       core.print("> Before clearRealTimeBuffer")
+       // This step is important: reset real-time buffer
+       custom.clearRealTimeBuffer()
+       
+       core.print("> Before setRealTimeBufferSize")
+       //SET max size of real-time buffer
+       var max_size_real_time_buffer = gui.editGetText("edit_real_time_buffer_size")
+       custom.setRealTimeBufferSize(max_size_real_time_buffer)
+
+       web.SendText("var hlds_directory = " + hlds_directory_on_TRBReader)
+
+       // Check if Chi2 Monitoring is desired
+       //var chi2_control_required = gui.editGetText("edit_chi2_control")
+       var chi2_control_required = gui.checkboxIsChecked("checkbox_activate_chi2_monitoring")
+       core.print("> Chi2_control_required: " + chi2_control_required)
+       //var chi2_control_active = chi2_control_required.localeCompare("true")
+
+       if(chi2_control_required == true)
+       {
+              core.print("> Monitoring chi2...")
+              // Later check if there was a previous calibration (or other way of setting the Chi2 reference value)
+              var is_ref_chi2_calculated = true
+              var ref_chi2 = gui.editGetText("edit_chi2_reference_value")    //1.4 // Hard coded.... CALCULATE FROM average of first evetns..... (is it doesn't exist from previpus "calibration")
+       
+              core.print("> Before setIsReferenceChi2Calculated")
+              custom.setIsReferenceChi2Calculated(is_ref_chi2_calculated, ref_chi2)   // Always 'true' in the beginning at this phase.
+              //End
+       }
+      var num_events_to_control_chi2 = gui.editGetText("edit_num_events_to_control_chi2")
+      var chi2_goodness_margin_factor = gui.editGetText("edit_margin_factor")
+
+
+
+       // ----- PROCESSING -----
+       // Cycle for .hld search, processing, sending .dat files to ANTS2, reconstruct  and visualization
+      var cycle_num = 0
+      while(stop != true)       // not recieved a "acquisition_stopped" notification (how???)
+       {
+             cycle_num += 1
+             //core.sleep(2000) // To delete or tune...
+       
+             // Search for .hlds, process and integrate
+
+              // Search for .dat files, load, reconstruct, show the last 200k (option to do not delete the .dat of the already shown)
+              // Convert from graph to png and to DICOM format; save pictures at a rate of ~10 frames/s to make videos offline, if wanted.
+              
+              // ANTS2 processing:
+              // 1) core.searchAll(".dat", acquisition_directory) // .dat files (result from integration of .hlds) can be in the same directory as .hlds
+              // 2)  events.LoadEventsAscii(acquisition_directory)
+              // 3) rec.ReconstructEvents( 3 ) // number of threads as argument
+              // 3b) Save or delete reconstructed
+              // 4) grwin.PlotDensityXY()
+              // 5) grwin.Show( )
+              
+
+              // File finder on TRBReader
+              if (first_iteration_in_the_cycle)
+              {
+                          //core.print("sent text: var list_hlds_server = core.SetNewFileFinder( " + hlds_directory_on_TRBReader +",  \"*.hld\" )")
+                           web.SendText("var list_hlds_server = core.SetNewFileFinder( " + hlds_directory_on_TRBReader +",  \"*.hld\" )")
+                           first_iteration_in_the_cycle = false
+              }
+             else
+                             web.SendText("var list_hlds_server = core.GetNewFiles( )")
+   
+              
+              // num_files not used so far
+              var num_files_s = web.SendText("list_hlds_server.length")
+              //core.print(num_files_s)
+              var num_filess_o = JSON.parse(num_files_s)
+              var num_files = num_filess_o["evaluation"]
+              //core.print("num .hld files: " + num_files)
+
+              if(num_files == 0)
+                     continue;
+
+              //web.SendText("var hlds_directory = " + hlds_directory_on_TRBReader)
+
+       // Test
+       //var time_stamp = core.GetTimeStamp( )
+       //core.print("time stamp 1: " + time_stamp)
+       var num_events_before = 0
+       var num_events_after = 0
+
+       // IF Chi2 monitoring is desired
+/*
+if(chi2_control_required == true)
+{
+       core.print("> Monitoring chi2...")
+       // Later check if there was a previous calibration (or other way of setting the Chi2 reference value)
+       var is_ref_chi2_calculated = true
+       var ref_chi2 = 81 // Har coded.... CALCULATE FROM average of first evetns..... (is it doesn't exist from previpus "calibration")
+
+       core.print("> Before setIsReferenceChi2Calculated")
+       custom.setIsReferenceChi2Calculated(is_ref_chi2_calculated, ref_chi2)   // Always 'true' in the beginning at this phase.
+        //End
+}
+*/
+
+for (var it = 0; it < num_files; it++)
+{              
+              // --------------------------------------------------------------------
+              // --- PROCESS .HLD FILE -> GENERATE .DAT file ---
+              // --------------------------------------------------------------------
+              //var cicle_of_hld_processing_string = " var num_files = list_hlds_server.length; for(var i = 0; i < num_files; i++) { hld.ProcessFile(hlds_directory + list_hlds_server[i] , hlds_directory + list_hlds_server[i] + \".dat\")  } "
+              var hld_processing_string = "hld.ProcessFile(hlds_directory + list_hlds_server[" + it + "] , hlds_directory + list_hlds_server[" + it + "] + \".dat\")"
+              var res_prc = web.SendText(hld_processing_string)
+              core.print(res_prc)
+
+              // send .dat from TRBReader to ANTS2
+              // var res_send_dat = web.SendText("var list_dat_files_server = core.SetNewFileFinder( " + hlds_directory_on_TRBReader +",  \"*.dat\" )")
+             // core.print(res_send_dat)
+/*
+              var num_dat_files_s = web.SendText("list_dat_files_server.length")
+              core.print("num_dat_files_s: " + num_dat_files_s)
+              var num_dat_filess_o = JSON.parse(num_dat_files_s)
+              var num_dat_files = num_dat_filess_o["evaluation"]
+              core.print("num .dat files: " + num_dat_files)
+*/
+              // Send .dat files from TRBReader to ANTS2
+
+            //   for(var j = 0; j  < num_dat_files; j++)
+            //  { 
+                     //r = web.SendText("sendfile("+ j + ")")  
+                     //core.print("sent string: sendfile( hlds_directory + list_hlds_server[" + it + "] + \".dat\")")
+              
+//core.print("> Before startTimer2")
+                     // TIMER ON.... to do
+                     custom.startTimer2( )
+                     //Alternatively use Javascript Date class
+                     //var time1 = Data.now()  // miliseconds
+                     
+       if(ip_server == "ws://127.0.0.1:")
+       {
+              //do nothing
+              var delete_hlds_files = gui.checkboxIsChecked("checkbox_delete_hlds_during_real_time")
+              if (delete_hlds_files)
+              {
+                      //core.print("DELETING .hld already processed (integration of signal event waveforms)...")
+                      var hld_proc_string = " server.SendText( hlds_directory + list_hlds_server[" + it + "])"
+                      var res_prc = web.SendText(hld_proc_string)
+                      //core.print("hdl filename sent from TRBReader: " + res_prc)
+                                                   
+                     // Call a system command to delete the file with name 
+                     custom.StartExternalProcess("rm", [res_prc])
+              }
+       }
+       else {
+
+                     // ----------------------------------------------------------------
+                     // -------------- SEND .dat file TO ANTS2 -------------
+                     // ----------------------------------------------------------------
+                     r = web.SendText("sendfile2( hlds_directory + list_hlds_server[" + it + "] + \".dat\")") 
+                     // list_hlds_server[i] , hlds_directory + list_hlds_server[i] + \".dat\"
+                     
+                     //core.sleep(2000) // Is this needed?
+
+                     // -------------------------------------------------------------------------------------------------------------------------------------------
+                     // -------------- READ THE BINARY FILE IN ANTS2 COMPUTER BUFFER AND DAVE AS .dat file  -------------
+                     // -------------------------------------------------------------------------------------------------------------------------------------------
+                     web.SaveBinaryReplyToFile(dat_files_directory_on_ANTS2 +  "dat_" + it  + "_" + cycle_num + ".dat")
+           //   }
+           
+              // Process .dat files already in ANTS2
+             // var list_files_to_rec = []
+             // if(first_search_for_dat_files)
+             //        list_files_to_rec = core.SetNewFileFinder(dat_files_directory_on_ANTS2, "*.dat")
+             // else
+             //        list_files_to_rec = core.GetNewFiles()
+
+              // To be continued: process - load, reconstruct, show
+              // for (var f = 0; f <  list_files_to_rec.length; f++)
+              // {
+                     //core.print(dat_files_directory_on_ANTS2 + list_files_to_rec[f])
+               //      events.LoadEventsAscii(dat_files_directory_on_ANTS2 + list_files_to_rec[f], true)
+              //}
+
+              } //end else from if ip_server
+  
+  
+              //OR: just "ask" TRBReader extractor unit for the number of events extracted... 
+             
+             // Just for processing rate count purposes.
+              num_events_before = events.countEvents()
+     //         core.print("Events before: " + num_events_before)
+
+              // ----------------------------------------------------------------
+              // -------------- LOAD .dat FILE IN ANST2 ------------
+              // ----------------------------------------------------------------    
+             
+                if(ip_server == "ws://127.0.0.1:")
+                     {
+                              var hld_proc_string = " server.SendText( hlds_directory + list_hlds_server[" + it + "] + \".dat\")"
+                              var res_prc = web.SendText(hld_proc_string)
+                             // core.print("filename: " + res_prc)
+
+                             events.LoadEventsAscii(res_prc) 
+                     }
+                     else
+                            //events.LoadEventsAscii( dat_files_directory_on_ANTS2 +  "dat_" + it  + "_" + cycle_num + ".dat", true) // Append, appends the  first maximum or keeps the ones already appended...????
+                             events.LoadEventsAscii( dat_files_directory_on_ANTS2 +  "dat_" + it  + "_" + cycle_num + ".dat") // Append, appends the  first maximum or keeps the ones already appended...
+
+              num_events_after = events.countEvents()
+
+              if (num_events_after == 0)
+                  {   core.print("zero event");
+                     break;}
+
+     //         core.print("Events after: " + num_events_after)
+
+             // Call bash script to change the extension of the .dat files (already loaded) to .back  //later, move to other directory... 
+             // core.StartExternalProcess( "/home/jsm/Documents/convert_dat_files_to_back.sh",  [""] ) // I have copied this script function from TRBReader....
+
+              //events.LoadEventsAscii(acquisition_directory, true) // 'true' for Append
+              //var num_events = events.GetNumEvents()
+
+              // ------------------------------------------------------------------
+              // -------------- RECONSTRUCT AND SAVE  -------------
+              // ------------------------------------------------------------------
+//              rec.ReconstructEvents( 5 ) // number of threads as argument
+              //grwin.PlotDensityXY()
+              //grwin.Show( )
+
+              // COPY reconstructed events to Real-Time Buffer
+              // rec.copyReconstructedEventsToRealTimeBuffer( )
+              //rec.copyReconstructedEventsToRealTimeBufferList( )
+
+//core.print("> before copyEventsToRealTimeBufferList")
+custom.copyEventsToRealTimeBufferList( )
+//core.print("> before copyBackToEventDataHubEventsFromBuffer")
+custom.copyBackToEventDataHubEventsFromBuffer( )
+
+ rec.ReconstructEvents( 7 ) // number of threads as argument
+
+              // Plot function that take the Reconstructed eventsfrom the Buffer.
+              // When this function is done, the function events.ClearEvents() can be called here.
+              //rec.drawDensityPlotXYWithRealTimeBufferData( )
+//               rec.drawDensityPlotXYWithRealTimeBufferListData( )
+
+ grwin.PlotDensityXY()
+ grwin.Show( )
+
+              // TIMER OFF  ...to do
+              var time = custom.getElapsedTimeTimer2( )
+              var rate = (num_events_after - num_events_before)/ (time * math.pow(10,-3))
+              //Alternatively use Javascript Date class
+              //var time2 = Data.now() // miliseconds
+              //var rate = (num_events_after - num_events_before)/ ((time2-time1) * math.pow(10,-3))
+              
+              core.print("Rate of new events revieved from TRBReader, loaded, reconstructed and shown: " +  rate + " evt/s")
+
+// IF Chi2 monitoring is desired:
+
+if(chi2_control_required == true)
+{
+       var trigger_alarm = false
+       // chi2Control function compares the average Chi2 of "num_events_to_control" events with the reference Chi2 value. 
+      // The reference chi2 value can be set with the following, called somewhere above in this scripts: rec.setIsReferenceChi2Calculated(is_ref_chi2_calculated, ref_chi2). This reference value should be taken from the previous "Calibration" (calculation of LRFs...).
+       trigger_alarm = custom.chi2Control2(num_events_to_control_chi2, chi2_goodness_margin_factor) // ARGUMENTS - 1st: unsigned long num_events_to_control, 2nd: float margin_factor and 3rd: float percentage_of_bads 
+       if(trigger_alarm == true)
+       {
+               gui.textAppendPlainText("text_field", "> > > > > > > ALARM: Chi2 is far from reference. Maybe LRFs are not adequate anymore \n Consider to stop the acquisition and calculate new Pedestals and LRFs.")
+               core.print("> > > > > > > ALARM: Chi2 is far from reference. Maybe LRFs are not adequate anymore")
+               
+               gui.messageBox( "ALARM: Chi2 is far from reference value!\n\nPlease consider to make NEW LRFs" )
+
+       }
+}
+// End Chi2 control
+
+ events.ClearEvents( )
+
+} // End for (var it = 0; it < num_files; it++)
+              }  // End while
+       //else
+       //       core.print("Real-time acquisition didn't start for some reason. \nPlease check the acquisition settings...")
+
+} // End Real-Time acquisition
+
+
+
+//-----------------------------------------------------------------------
+function clearRealTimeBuffer()
+//-----------------------------------------------------------------------
+{
+       // Clean the real-time buffer in ANTS2
+       custom.clearRealTimeBuffer()
+//       rec.clearRealTimeBuffer()
+       
+       // Call a function that sends a message to run a script in TRBReader PC: the script is called "delete_hlds_and_dat.sh"
+
+       // DELETE .hld files and .dat files from the directory defined in the textfield as the directory to save .hld files
+        var hlds_real_time_files_dir = gui.editGetText("edit_real_time_hlds_files_dir")
+        core.print(".HLD and .DAT files will be deleted from the real-time directory: " + hlds_real_time_files_dir)
+        
+        if(ip_server == "ws://127.0.0.1:")
+        {
+                      custom.StartExternalProcess(system_scripts_directory + "/Aux_scripts/delete_hlds_and_dat.sh", [hlds_real_time_files_dir])
+        } else 
+        {
+               var r1 = web.SendText("hlds_files_dir = \"" + hlds_real_time_files_dir + "\"")
+               var r2 = web.SendText("delete_hlds_and_dat_files_on_real_time_directory(hlds_files_dir)")
+       }
+}
+//-----------------------------------------------------------------------
+
+
+//-----------------------------------------------------
+// CALCULATE PEDESTALS:
+//-----------------------------------------------------
+function calculatePedestals()
+{
+//Load pedestals to an array of 64 elements
+
+//var dir = "/data/GAGGCam/hlds/2018-04-10/ColdCamera/Pedestals_Bias_27_0V_1kHz_SiPMPatchsAssembledAgain_4" 
+//var dir = "/home/jsm/Documents/Real-Time-Dat-PEDESTALS-Files-from-TRBReader"
+var dir = gui.editGetText("edit_pedestals_hlds_files_dir")
+
+  // 1) PROCESS PEDESTALs .hdl files -> integrate the signals -> generate .dat files:
+  //   var s_hlds_pedestals_files_dir = gui.editGetText("edit_pedestals_hlds_files_dir")
+  //     processHLDsAndSendDATFiles(dir, "pedestals")
+
+  // 2) CALCULATE PEDESTALS 
+var fileNamePattern = "*.dat" 
+var files = core.SetNewFileFinder( dir, fileNamePattern ) 
+
+events.ClearEvents( )
+config.Replace( "DetectorConfig.LoadExpDataConfig.Preprocessing" ,  false )
+
+for(var f = 0; f < files.length; f++)
+{
+     var namefile = dir + "/" + files[f]
+     void events.LoadEventsAscii(namefile, true )
+}
+
+hist.DeleteAllHist()
+
+var numEvents = events.GetNumEvents()
+var numPms = pms.CountPM()
+
+
+var pedestals = []
+for (var i=0; i < numPms; i++)
+{
+  pedestals[i] = 0
+}
+
+
+var electronic_channel = 0
+var prefix_Hist_name = "Peaks_PM_"
+var iPM_Hist_name =""
+var iPM = 0
+
+
+// Create one Histogram for each PM
+
+//test
+//var num_bins = numEvents/37
+
+for(var iPM = 0; iPM < numPms; iPM++)
+       {
+              iPM_Hist_name = prefix_Hist_name + iPM
+             //hist.NewHist(iPM_Hist_name, 135, -18470, -18200)
+              hist.NewHist(iPM_Hist_name, 135, 0, 0)
+              //hist.NewHist(iPM_Hist_name, num_bins, 0, 0)
+              //hist.NewHist(iPM_Hist_name, 120, 0, 0)
+              hist.SetTitles(iPM_Hist_name, "ElectronicChannel", "Counts")
+       }
+
+
+// Fill the Histograms
+for (var iEvent=0; iEvent<numEvents; iEvent++)
+{   
+       for(var iPM = 0; iPM < numPms; iPM++)
+       {
+                iPM_Hist_name = prefix_Hist_name + iPM
+                electronic_channel = events.GetPMsignal(iEvent, iPM)
+                hist.Fill(iPM_Hist_name, electronic_channel, 1)
+        }
+}
+
+
+// Find the fist peak, which is the pedestal and save in the array 'pedestals'
+  for(var iPM = 0; iPM < numPms; iPM++)
+       {
+                iPM_Hist_name = prefix_Hist_name + iPM
+                var peaks = hist.FindPeaks(iPM_Hist_name, 4, 0.2)
+                pedestals[iPM] = peaks[iPM,0]
+                core.print("Peaks for PM# " +  iPM + " are at: " + peaks)
+       
+               hist.SetLineProperties(iPM_Hist_name, 3, 1, 1)
+               hist.Draw(iPM_Hist_name, "")
+               //grwin.AddToBasket(iPM_Hist_name)
+
+               for (var i=0; i<peaks.length; i++)
+                      grwin.AddLine( peaks[i], 0, peaks[i], grwin.GetAxis().maxY, 2, 2, 2)
+
+               grwin.AddToBasket(iPM_Hist_name)
+               var pedestals_image_name = dir + "/" + iPM_Hist_name + ".png"
+               grwin.SaveImage( pedestals_image_name )
+       }
+
+
+// Write 'pedestals' array to a file
+// var currentDir_name = core.getCurrentDir( )
+// var workDir_name = core.GetWorkDir( )
+var pedestals_filename = dir + "/pedestals_file.dat"
+core.print(pedestals_filename)
+core.createFile( pedestals_filename, false )
+core.saveArray( pedestals_filename,  pedestals )
+}
+// End of CALCULATE Pedestals
+
+//----------------------------------------------
+// SET Pedestals in ANTS2
+//----------------------------------------------
+function set_pedestals_in_add_preprocessing()
+{
+       //Load pedestals
+       //var dir_pedestals =  "/home/jsm/Documents/Real-Time-Dat-PEDESTALS-Files-from-TRBReader"
+       var dir_pedestals = gui.editGetText("edit_pedestals_hlds_files_dir")
+
+       var pedestals_filename = dir_pedestals + "/pedestals_file.dat"
+       core.print(pedestals_filename)
+
+       var pedestals_from_file = core.loadColumn( pedestals_filename, 0 )
+       core.print(pedestals_from_file[0])
+
+       //var numEvents = events.GetNumEvents()
+       var numPMs = pms.CountPM() // events.GetNumPMs()
+
+       for (var iPMm=0; iPMm < numPMs; iPMm++ )
+       {  
+                config.Replace("DetectorConfig.LoadExpDataConfig.AddMulti["+iPMm+"][0]", -pedestals_from_file[iPMm])  
+       }
+}
+
+//-----------------------------------------------------------------------
+function pedestalsFunctions()  // NOT in use!!!!!!!!!
+//-----------------------------------------------------------------------
+{
+       // 1) ACQUIRE PEDESTALS:
+       //acquirePedestals()
+       start_pedestals_acquisition()
+       
+      // 2) PROCESS PEDESTALs .hdl files -> integrate the signals -> generate .dat files:
+       var s_hlds_pedestals_files_dir = gui.editGetText("edit_pedestals_hlds_files_dir")
+       processHLDsAndSendDATFiles(s_hlds_pedestals_files_dir, "pedestals")
+
+       //CALCULATE PEDESTALS
+       calculatePedestals()
+       
+       //SET Pedestals in ANTS2
+       set_pedestals_in_add_preprocessing()
+       
+       // After set pedestals, switch on Pre-processing again (switched off when calculationg pedestals - check if it done!! )
+        config.Replace( "DetectorConfig.LoadExpDataConfig.Preprocessing" ,  true ) 
+}
+//-----------------------------------------------------------------------
+
+
+
+// The definition of the variables to be used inside a subscript  (as LRF parameters) must be "global variables" (defined in the main script, outside any function).
+// Define the LRFs parameters (this variables names are the same in the "sub-script" (IterativeAlgorithm....)) - If they are changed in the sub-script the chabges will be recognized here after the script run
+       var compression_factor = 0                              //custom.convertStringToDouble(gui.editGetText("edit_compress_factor"))//6
+       var compression_r0_switchover = 0                //custom.convertStringToDouble(gui.editGetText("edit_switchover")) // 3.3
+       var compression_lam_smoothness = 0          //custom.convertStringToDouble(gui.editGetText("edit_smoothness")) // 5.1
+
+//----------------------------------------------------------------------------
+function calculateLRFs()
+{
+       //--------------------------------------------------------------------------------------------------------------------------------------
+       // 1. Acquire events to be used to calculate LRFs, process the .hlds and send .dat to ANTS2 PC
+       //--------------------------------------------------------------------------------------------------------------------------------------
+       // acquireEventsForLRFs()
+
+       //---------------------------------------------------------------------------------------------------------------------------------
+       // 2. Load recently acquired events to make LRFs.
+      // The new LRFs are in the directory (of ANTS2 PC):
+      // var dir_dat_files_directory_on_ANTS2 = "/home/jsm/Documents/Real-time-Dat-Events-for-LRFs-Files-from-TRBReader"
+      // var dir_dat_files_directory_on_ANTS2 = gui.editGetText("edit_DAT_files_dir")
+       
+       // NEW: use the directory defined in the GUI text field:
+       var dir_dat_files_directory_on_ANTS2 = gui.editGetText("edit_dir_of_flood_field_for_LRFs")
+
+       var fileNamePattern = "*.dat" 
+       var files = core.SetNewFileFinder( dir_dat_files_directory_on_ANTS2, fileNamePattern ) 
+
+       events.ClearEvents( )
+       config.Replace( "DetectorConfig.LoadExpDataConfig.Preprocessing" ,  true )
+
+       if (files.length == 0)
+       {
+               gui.messageBox("The chosen directory has no .DAT files!")
+              return
+        }      
+       for(var f = 0; f < files.length; f++)
+       {
+              var namefile = dir_dat_files_directory_on_ANTS2 + "/" + files[f]
+              events.LoadEventsAscii(namefile, true )
+       }       
+       
+       //---------------------
+       // 3. Reconstruct events with previous LRFs for the first guess
+       //---------------------
+       //rec.ReconstructEvents()
+       
+        //---------------------
+        // 4. MAKE LRFS 
+        //---------------------
+       
+        // DELETE the previous LRFs - is it good idea? Save before..
+        //lrf.Save("/home/jsm/Software/Tests/LRFs/LRFs_previous.json")
+        //var timestamp = core.GetTimeStamp( )
+        //core.print(timestamp)
+        //lrf.Save(dir_dat_files_directory_on_ANTS2 + "/LRFs_previous_" + timestamp + ".json")
+        lrf.Save(dir_dat_files_directory_on_ANTS2 + "/LRFs_previous.json")
+
+        //lrf.DeleteCurrent( )
+        
+        // The LRFs configuration parameters are the ones in ANTS2 GUI:  number of nodes, Comp. factor, switchover, smoothness
+        // lrf.Make( )
+       //--------------------------------------------------------------------------
+       // Call Iterative Algorithm for LRFs Reconstruction.
+       //--------------------------------------------------------------------------
+       //var script_dir = core.GetScriptDir()
+       var dir_iterative_method_script = "/home/daq/Software/ANTS2_SCRIPTS"
+       var script_name = dir_iterative_method_script + "IterativeAlgorithmForLRFsCalculationToCallInRealTimeApp_GAGG_Teflon_LRF_parameters.txt"
+       core.print(script_name)
+
+       // The definition of the variables to be used inside a subscript must be "global variables" (defined in the main script, outside any function). Actually they are define before this function (see above, please).
+       // Define the LRFs parameters (this variables names are the same in the "sub-script" (IterativeAlgorithm....)) - If they are changed in the sub-script the chabges will be recognized here after the script run
+       // var compression_factor = 6
+       // var compression_r0_switchover = 3
+       // var compression_lam_smoothness = 5.1
+        compression_factor = custom.convertStringToDouble(gui.editGetText("edit_compress_factor"))//6
+        compression_r0_switchover = custom.convertStringToDouble(gui.editGetText("edit_switchover")) // 3.3
+        compression_lam_smoothness =custom.convertStringToDouble(gui.editGetText("edit_smoothness")) // 5.1
+
+
+       //Load the script
+       var script_iterative_method = core.loadText(script_name)
+       core.print("Running iterative method for LRFs recosntruction...")
+       var res_iterative_method = core.evaluate(script_iterative_method)
+       core.print("Iterative method done.")
+
+        // There is need to save and load the LRFs....?
+        //Update LRF window.. GUI...?
+
+       var num_LRFs_in_stack = lrf.CountIterations( )
+       //core.print("Num LRFS in stack: " + num_LRFs_in_stack)
+
+       lrf.SetCurrent(num_LRFs_in_stack-1) // not need, but still - to appear in the LRFs GUI updated...
+
+       // SAVE new LRFs in the directory of the Flood field define in GUI (for LFRs calculation)
+       //timestamp = core.GetTimeStamp( )
+       //lrf.Save(dir_dat_files_directory_on_ANTS2 + "/new_LRFs_" + timestamp + ".json")
+       lrf.Save(dir_dat_files_directory_on_ANTS2 + "/new_LRFs.json")
+
+       // MESSAGE TO THE USER: LRFs are calculate!
+       gui.messageBox("Iterative algorithm finishes its performance.\nNEW LRFs are available.\nThis LRFs were saved in the directory of the Flood Field used\n\n You can start a new Real-Time Acquisition and verify if the new LRFs are adequate.\nDon't forget to change the .HLD files directory.")
+
+      // JUST TEST IF ANTS2 KNOW THE NEW LRFS. Try to reconstruct - having some statistical reconstruction algorithm selected.
+      //rec.ReconstructEvents()
+        
+        // 5. Avaluate LRFs - at least check if the number of events used to average Chi2 are now reconstructed with chi2 close to Chi2 reference value
+      
+      //TO DO: 
+       //1.  Reconstruct events with NEW LRFs 
+       //1.1 Load events saved in some runtime buffer that saves the same number of events used to trigger the alarm of bad LRFs.
+              // TO DO - c++ script function to load to Event Data Hub the events in the buffer refered to in the line above.
+              // In middle while use the same .dat files used for calculation of new LRFs. Also start new real-time acq and see if Chi2 monitoring still triggers the alarm.
+
+       //1.2 Call reconstruction function:
+       //rec.ReconstructEvents() //using the NEW LRFs, already setted as the current ones.
+
+       // TO DO: the c++ script function below:
+ /*      //var are_LRFs_close_to_Ch2_Reference =  rec.areEventsReconstructedWithNewLRFsCloseToChi2Reference()
+       var are_LRFs_close_to_Ch2_Reference = false
+       
+       //6. Inform the user about the goodness of LRFs.
+       if (are_LRFs_close_to_Ch2_Reference == true)
+              core.print("NEW LRFs calculated successfuly")
+       else
+       {
+              gui.textAppendPlainText("text_field", "Still NO proper LRFs. It can be due to non adequated LRFs parametrization: comp. factor, swithcover, smoothness.\nPlease, also verify the Pedestals are appropriated for the SiPMs bias voltage and Temperature.\nConsider to calculated Pedestals again and then recalculate LRFs.")
+              core.print( "Still NO proper LRFs. It can be due to non adequated LRFs parametrization: comp. factor, swithcover, smoothness.\nPlease, also verify the Pedestals are appropriated for the SiPMs bias voltage and Temperature.\nConsider to calculated Pedestals again and then recalculate LRFs.")
+       }
+ */
+}
+//-----------------------------------------------------------------------------------------------------------------------
+
+
+
+// PEDESTALS
+function acquirePedestals2()
+{
+       //Pedestals directory....
+       var hlds_pedestals_directory_on_TRBReader = "\"/data/GAGGCam/hlds/Real-Time/Pedestals/\""
+       web.SendText("var hlds_pedestals_directory = " + hlds_pedestals_directory_on_TRBReader)
+
+       var s_hlds_pedestals_files_dir = "/data/GAGGCam/hlds/Real-Time/Pedestals"
+       var hld_pedestals_file_size_mega = 50
+       var res = web.SendText( "set_dir(\"" + s_hlds_pedestals_files_dir + "\", " + hld_pedestals_file_size_mega + ")")
+       
+       core.sleep(3000) //check how many time is needed
+
+       var r1 = web.SendText("startPedestalsAcquisition2()")
+       core.sleep(10000) // 10seconds?                                      // LATER: the acquisition rate can be defined by the user // The default acquisition rate of random triggerred events in our CTS config is 1kHz
+       var r2= web.SendText("stopAquisition()")
+
+       //Test: use function processHLDsAndSendDATFiles() instead of code below (that makes the same!)
+       processHLDsAndSendDATFiles(s_hlds_pedestals_files_dir, "pedestals")
+}
+
+function acquirePedestals()
+{
+       // 1) get pedestals dir from text field
+       // 2) write pedestals dir to .xml Event Builder
+       // 3) Call startPedestalsAcquisition()
+       start_pedestals_acquisition()
+}
+
+// dir must have no slash in the end: / -> E.g: /directory/path
+function processHLDsAndSendDATFiles(dir, type)
+{
+         var hlds_directory_on_TRBReader = "\""  + dir + "/\""
+         web.SendText("var hlds_directory = " + hlds_directory_on_TRBReader)
+
+       // Process .hld files and produce .dat files
+       // core.print("sent text: var list_hlds_server = core.SetNewFileFinder( " + hlds_directory_on_TRBReader +",  \"*.hld\" )")
+       web.SendText("var list_hlds_server = core.SetNewFileFinder( " + hlds_directory_on_TRBReader +",  \"*.hld\" )")
+
+              var num_files_s = web.SendText("list_hlds_server.length")
+              //core.print(num_files_s)
+              var num_filess_o = JSON.parse(num_files_s)
+              var num_files = num_filess_o["evaluation"]
+              core.print("num .hld files: " + num_files)
+
+              if(num_files == 0)
+              {
+                     if (type == "pedestals")
+                             //core.print("There is no pedestal files. Please, acquire random triggered events with no source present.")
+                            core.print("There is no .hld files in " + dir + ".  Please, acquire random triggered events with no source present.")
+                     else if (type =="data")
+                            core.print("There are no .hld files in the directory: " + dir)
+                     return;
+               }
+
+               var dat_files_directory_on_ANTS2 = ""
+
+               if (type == "data")
+              {
+                                   if (ip_server == "ws:\/\/127.0.0.1:")
+                                   {
+                                         dat_files_directory_on_ANTS2 = gui.editGetText("edit_real_time_hlds_files_dir") + "/"
+                                   }
+                                    else  // TRBReader is running a remote machine (so the .dat files are received in the ANTS2 GUI script machine in the directory below)
+                                          dat_files_directory_on_ANTS2 = gui.editGetText("edit_DAT_files_dir") + "/"
+              }
+              else if (type == "pedestals")
+               {
+                    // ATTENTION:  PEDESTALS .dat in ANTS2 PC (sent by TRBReader PC): is can be added to GUI the option to choose the directory..
+                     // var dat_files_directory_on_ANTS2 = "/home/jsm/Documents/Real-Time-Dat-PEDESTALS-Files-from-TRBReader/"
+                                 if (ip_server == "ws:\/\/127.0.0.1:")                   
+                                 {
+                                          dat_files_directory_on_ANTS2 = gui.editGetText("edit_pedestals_hlds_files_dir") + "/"
+                                  }else 
+                                           // TRBReader is running a remote machine (so the .dat files are received in the ANTS2 GUI script machine in the directory below)
+                                          dat_files_directory_on_ANTS2 = gui.editGetText("edit_DAT_files_dir") + "/"
+               }
+
+
+              for (var it = 0; it < num_files; it++)
+              {      
+	       var hld_processing_string = "hld.ProcessFile(hlds_directory + list_hlds_server[" + it + "] , hlds_directory + list_hlds_server[" + it + "] + \".dat\")"
+                      var res_prc = web.SendText(hld_processing_string)
+	      core.print(res_prc)
+
+                     if (ip_server != "ws:\/\/127.0.0.1:")
+                      {
+
+	             // ----------------------------------------------------------------
+                            // -------------- SEND .dat file TO ANTS2 -------------
+	             // ----------------------------------------------------------------
+	             r = web.SendText("sendfile2( hlds_directory + list_hlds_server[" + it + "] + \".dat\")") 
+
+	             // -------------------------------------------------------------------------------------------------------------------------------------------
+	             // -------------- READ THE BINARY FILE IN ANTS2 COMPUTER BUFFER AND DAVE AS .dat file  -------------
+	             // -------------------------------------------------------------------------------------------------------------------------------------------
+	             web.SaveBinaryReplyToFile(dat_files_directory_on_ANTS2 +  "dat_" + it  + ".dat")
+                      } //End if
+              }     
+                  
+       if (ip_server != "ws:\/\/127.0.0.1:")
+                      {
+        // DELETE .hld files and .dat files from the 'dir' directory on TRBReader PC (either Pedestals or LRFs directory)
+        // var hlds_files_dir = gui.editGetText("edit_hlds_files_dir")
+        //core.print("hlds_files_dir: " + hlds_files_dir)
+        var r1 = web.SendText("hlds_files_dir = \"" + dir + "\"")
+        var r2 = web.SendText("delete_hlds_and_dat_files_on_real_time_directory(hlds_files_dir)")
+       }
+       else 
+       {
+              //GUI option for delete OR NOT .HLD files!
+              custom.StartExternalProcess("/home/jsm/Documents/TRB3/TRB_DAQ_using_DABC/Aux_scripts/delete_hlds.sh", [dat_files_directory_on_ANTS2])
+       }
+       
+       gui.messageBox("Pedestals .HLD files processed.\nNow Pedestals can be calculated")
+}
+
+// dir must have no slash in the end: / -> E.g: /directory/path
+function processHLDsAndSendDATFiles_2(dir)
+{
+         var hlds_directory_on_TRBReader = "\""  + dir + "/\""
+         web.SendText("var hlds_directory = " + hlds_directory_on_TRBReader)
+
+       // Process .hld files and produce .dat files
+       // core.print("sent text: var list_hlds_server = core.SetNewFileFinder( " + hlds_directory_on_TRBReader +",  \"*.hld\" )")
+       web.SendText("var list_hlds_server = core.SetNewFileFinder( " + hlds_directory_on_TRBReader +",  \"*.hld\" )")
+
+              var num_files_s = web.SendText("list_hlds_server.length")
+              //core.print(num_files_s)
+              var num_filess_o = JSON.parse(num_files_s)
+              var num_files = num_filess_o["evaluation"]
+              core.print("num .hld files: " + num_files)
+
+              if(num_files == 0)
+              {
+                    core.print("There are no .hld files for in the directory: " + dir)
+                     return;
+               }
+
+              var dat_files_directory_on_ANTS2 = ""
+
+              if (ip_server == "ws://127.0.0.1:")
+              {
+                    dat_files_directory_on_ANTS2 = gui.editGetText("edit_real_time_hlds_files_dir") + "/"
+              }
+               else  // TRBReader is running a remote machine (so the .dat files are received in the ANTS2 GUI script machine in the directory below)
+                     dat_files_directory_on_ANTS2 = gui.editGetText("edit_DAT_files_dir") + "/"
+
+
+              for (var it = 0; it < num_files; it++)
+              {      
+	     var hld_processing_string = "hld.ProcessFile(hlds_directory + list_hlds_server[" + it + "] , hlds_directory + list_hlds_server[" + it + "] + \".dat\")"
+                    var res_prc = web.SendText(hld_processing_string)
+	 //core.print(res_prc)
+
+
+                  if (ip_server != "ws://127.0.0.1:")
+                  {
+
+	      // ----------------------------------------------------------------
+	      // -------------- SEND .dat file TO ANTS2 -------------
+	      // ----------------------------------------------------------------
+	      r = web.SendText("sendfile2( hlds_directory + list_hlds_server[" + it + "] + \".dat\")") 
+
+	      // -------------------------------------------------------------------------------------------------------------------------------------------
+	      // -------------- READ THE BINARY FILE IN ANTS2 COMPUTER BUFFER AND DAVE AS .dat file  -------------
+	      // -------------------------------------------------------------------------------------------------------------------------------------------
+	      web.SaveBinaryReplyToFile(dat_files_directory_on_ANTS2 +  "dat_" + it  + ".dat")
+                 }     
+      }    // End for
+
+          
+        // DELETE .hld files and .dat files from the 'dir' directory on TRBReader PC (either Pedestals or LRFs directory)
+        // var hlds_files_dir = gui.editGetText("edit_hlds_files_dir")
+        //core.print("hlds_files_dir: " + hlds_files_dir)
+
+       // Uncomment below if the user option is to delete the .HLD files after processing
+        //        var r1 = web.SendText("hlds_files_dir = \"" + dir + "\"")
+        //var r2 = web.SendText("delete_hlds_and_dat_files_on_real_time_directory(hlds_files_dir)")
+
+        gui.messageBox("Pedestals .HLD files processed.\nNow .DAT files can be loaded in ANTS2")
+
+}
+
